@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">HarmoniPlay</string>
+    <string name="no_songs_msg">No Songs currently in your storage!</string>
+    <string name="cant_fetch_songs_msg">Could not get the songs!</string>
+    <string name="all">All</string>
+    <string name="only_favorite">Only Favorite</string>
+    <string name="no_fav_songs_msg">No favorite songs yet!</string>
+    <string name="add_fav_songs_msg">add your favorite songs to create your personalized collection! ❤️🎵</string>
+    <string name="empty_string" />
+    <string name="music_notification_channel_id">channel_003</string>
+    <string name="music_notification_channel_name">Music Alerts</string>
+    <string name="music_notification_channel_desc">Notification about current music information.</string>
+    <string name="play">Play</string>
+    <string name="hello">Hello</string>
+    <string name="login">Login</string>
+    <string name="add_details_to_contine">Add details to continue</string>
+    <string name="continue_string">Continue</string>
+    <string name="search_dots">Search…</string>
+    <string name="fields_should_not_be_empty">Fields should not be empty!</string>
+    <string name="name_required">Name Required!</string>
+    <string name="permission_required">Permission Required!</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="okay">Okay</string>
+    <string name="permanently_declined_permission_msg">It seems you permanently declined %1$s permission. You can go to app settings to grant it.</string>
+    <string name="notification_access_msg">This app needs notification permission so that it will notify you all the events.</string>
+    <string name="storage_access_for_music_msg">This app needs access to device\\\'s read storage so that you can play your songs and enjoy with the app features.</string>
+</resources>
