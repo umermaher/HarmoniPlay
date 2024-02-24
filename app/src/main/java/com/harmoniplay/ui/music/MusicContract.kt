@@ -1,8 +1,10 @@
 package com.harmoniplay.ui.music
 
+import androidx.compose.runtime.Immutable
 import com.harmoniplay.R
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.music.Song
+import com.harmoniplay.service.ServiceActions
 import com.harmoniplay.utils.composables.UiText
 
 data class MusicState(
@@ -20,9 +22,10 @@ data class MusicState(
         ),
     ),
     val topBarTitle: UiText = UiText.DynamicString(""),
-    val searchBarText: String = "",
+    val shouldAnimateItemPlacements: Boolean = false,
     val isSearchBarShowing: Boolean = false,
     val shouldShowMusicSettingsSheet: Boolean = false,
+    val shouldShowQuitDialog: Boolean = false,
 )
 
 data class CurrentSongState(
@@ -34,24 +37,28 @@ data class CurrentSongState(
 sealed class MusicResult {
     data class Message(val msg: String): MusicResult()
     data class ScrollToPosition(val pos: Int): MusicResult()
+    data class StartPlayerService(val action: ServiceActions, val shouldExitFromApplication: Boolean = false): MusicResult()
 }
 
 sealed interface MusicEvent {
-    data object ToggleMusicSettingsSheet: MusicEvent
     data class OnPermissionResult(val permission: String, val isGranted: Boolean): MusicEvent
     data object DismissPermissionDialog: MusicEvent
-    data class OnSongClick(val id: Long, val pos: Int): MusicEvent
-    data class OnFavoriteIconClick(val index: Int): MusicEvent
-    data class OnProgressValueChanged(val value: Float): MusicEvent
+    data object OnExitButtonClick: MusicEvent
     data class OnSearchTextChange(val query: String): MusicEvent
     data object ShowSearchBar: MusicEvent
     data object HideSearchBar: MusicEvent
     data object ClearSearchBar: MusicEvent
+    data object ToggleMusicSettingsSheet: MusicEvent
+    data class OnSongClick(val id: Long, val pos: Int): MusicEvent
+    data class OnFavoriteIconClick(val index: Int): MusicEvent
+    data class OnProgressValueChanged(val value: Float): MusicEvent
     class OnPlayBySettingsChanged(val playBy: PlayBy) : MusicEvent
     data object OnScrollToCurrentSongClick: MusicEvent
     data object OnPlayClick: MusicEvent
     data object SkipNext: MusicEvent
     data object SkipPrevious: MusicEvent
+    data object OnQuitButtonClick: MusicEvent
+    object OnCancelToQuitClick: MusicEvent
 }
 
 data class PlayByOption(

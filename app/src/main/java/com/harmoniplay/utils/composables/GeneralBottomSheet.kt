@@ -63,7 +63,7 @@ fun GeneralBottomSheetContent(
 
         Text(
             text = stringResource(id = titleRes),
-//            style = MaterialTheme.typography.titleLarge.copy(color = textColor),
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .align(Alignment.Center),
             textAlign = TextAlign.Center

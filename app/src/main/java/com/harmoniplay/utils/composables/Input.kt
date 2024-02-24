@@ -1,18 +1,13 @@
 package com.harmoniplay.utils.composables
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
 sealed class InputType (
@@ -24,10 +19,9 @@ sealed class InputType (
     data object Name: InputType(
         label = "Name",
         icon = {
-            Image(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-//                colorFilter = ColorFilter.tint(onSurfaceColor)
+            Icon(
+                imageVector = Icons.Rounded.Person,
+                contentDescription = null
             )
         },
         keyboardOptions = KeyboardOptions(

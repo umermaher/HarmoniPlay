@@ -5,13 +5,6 @@
     android:viewportWidth="64"
     android:width="30dp">
 
-    <group
-        android:name="animationGroup"
-        android:pivotX="32"
-        android:pivotY="32"
-        android:scaleX="0.4"
-        android:scaleY="0.4"
-        >
     <path
         android:pathData="M10,8L10,8c2.209,0 4,-1.791 4,-4v0c0,-2.209 -1.791,-4 -4,-4h0C7.791,0 6,1.791 6,4v0C6,6.209 7.791,8 10,8z">
         <aapt:attr name="android:fillColor">
@@ -21,10 +14,10 @@
                 android:gradientRadius="26"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="@color/primary_container"/>
-                <item android:offset="0.193" android:color="@color/primary_container"/>
-                <item android:offset="0.703" android:color="@color/primary_container"/>
-                <item android:offset="1" android:color="@color/primary_container"/>
+                <item android:offset="0" android:color="#FF5880C4"/>
+                <item android:offset="0.193" android:color="#FF5880C4"/>
+                <item android:offset="0.703" android:color="#FF5880C4"/>
+                <item android:offset="1" android:color="#FF5880C4"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -37,10 +30,10 @@
                 android:gradientRadius="28.77"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="@color/primary_container"/>
-                <item android:offset="0.193" android:color="@color/primary_container"/>
-                <item android:offset="0.703" android:color="@color/primary_container"/>
-                <item android:offset="1" android:color="@color/primary_container"/>
+                <item android:offset="0" android:color="#FF5880C4"/>
+                <item android:offset="0.193" android:color="#FF5880C4"/>
+                <item android:offset="0.703" android:color="#FF5880C4"/>
+                <item android:offset="1" android:color="#FF5880C4"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -53,10 +46,10 @@
                 android:gradientRadius="31.504"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="@color/primary_container"/>
-                <item android:offset="0.193" android:color="@color/primary_container"/>
-                <item android:offset="0.703" android:color="@color/primary_container"/>
-                <item android:offset="1" android:color="@color/primary_container"/>
+                <item android:offset="0" android:color="#FF5880C4"/>
+                <item android:offset="0.193" android:color="#FF5880C4"/>
+                <item android:offset="0.703" android:color="#FF5880C4"/>
+                <item android:offset="1" android:color="#FF5880C4"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -69,10 +62,10 @@
                 android:gradientRadius="27.938"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="@color/primary_container"/>
-                <item android:offset="0.193" android:color="@color/primary_container"/>
-                <item android:offset="0.703" android:color="@color/primary_container"/>
-                <item android:offset="1" android:color="@color/primary_container"/>
+                <item android:offset="0" android:color="#FF5880C4"/>
+                <item android:offset="0.193" android:color="#FF5880C4"/>
+                <item android:offset="0.703" android:color="#FF5880C4"/>
+                <item android:offset="1" android:color="#FF5880C4"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -86,9 +79,9 @@
                 android:endY="56"
                 android:tileMode="mirror"
                 android:type="linear">
-                <item android:offset="0" android:color="@color/primary"/>
-                <item android:offset="0.996" android:color="@color/primary"/>
-                <item android:offset="1" android:color="@color/primary"/>
+                <item android:offset="0" android:color="#FF002D6F"/>
+                <item android:offset="0.996" android:color="#FF002D6F"/>
+                <item android:offset="1" android:color="#FF002D6F"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -102,11 +95,10 @@
                 android:endY="55.924"
                 android:tileMode="mirror"
                 android:type="linear">
-                <item android:offset="0" android:color="@color/primary"/>
-                <item android:offset="0.428" android:color="@color/primary_container"/>
-                <item android:offset="1" android:color="@color/primary"/>
+                <item android:offset="0" android:color="#FF002D6F"/>
+                <item android:offset="0.428" android:color="#FF5880C4"/>
+                <item android:offset="1" android:color="#FF002D6F"/>
             </gradient>
         </aapt:attr>
     </path>
-    </group>
 </vector>

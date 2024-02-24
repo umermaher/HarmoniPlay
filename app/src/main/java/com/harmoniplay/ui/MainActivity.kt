@@ -20,7 +20,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.harmoniplay.service.PlayerService
 import com.harmoniplay.service.ServiceActions
 import com.harmoniplay.ui.theme.HarmoniPlayTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.system.exitProcess
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
@@ -65,16 +68,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        startPlayerService(ServiceActions.STOP)
-        super.onDestroy()
-    }
-
     fun startPlayerService(action: ServiceActions) {
         Intent(applicationContext, PlayerService::class.java).also {
             it.action = action.toString()
             startService(it)
         }
     }
-
 }

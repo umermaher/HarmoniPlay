@@ -14,7 +14,10 @@ import com.harmoniplay.utils.Screen
 import com.harmoniplay.utils.composables.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,7 +25,9 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val userManager: UserManager
 ): ViewModel() {
-    var loginState by mutableStateOf(LoginState())
+
+    private val _loginState = MutableStateFlow(LoginState())
+    val loginState = _loginState.asStateFlow()
 
     private val resultChannel = Channel<LoginResult>()
     val loginResults = resultChannel.receiveAsFlow()
@@ -32,11 +37,17 @@ class LoginViewModel @Inject constructor(
     fun onEvent(event: LoginUiEvent) {
         when (event) {
             is LoginUiEvent.LoginEvent -> {
-                loginState = loginState.copy(nameError = false)
+                _loginState.update {
+                    it.copy(nameError = false)
+                }
                 login()
             }
 
-            is LoginUiEvent.Name -> loginState = loginState.copy(name = event.value)
+            is LoginUiEvent.Name -> {
+                _loginState.update {
+                    it.copy(name = event.value)
+                }
+            }
             LoginUiEvent.DismissPermissionDialog -> permissionDialogQueue.removeFirst()
             is LoginUiEvent.OnPermissionResult -> onPermissionResult(
                 event.permission, event.isGranted
@@ -48,7 +59,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             if(areInputsValidated()) {
                 userManager.saveUser(
-                    loginState.name
+                    loginState.value.name
                 )
                 resultChannel.send(
                     LoginResult.CheckPermissionsThenNavigate(Screen.MusicScreen.route, Screen.LoginScreen.route)
@@ -85,14 +96,10 @@ class LoginViewModel @Inject constructor(
     }
 
     private suspend fun areInputsValidated(): Boolean {
-        return if(loginState.name.isEmpty()) {
-            loginState = loginState.copy(nameError = true)
-            resultChannel.send(LoginResult.Message(
-                UiText.StringResource(R.string.fields_should_not_be_empty, emptyList())
-            ))
-            false
-        } else if(loginState.name.isEmpty()) {
-            loginState = loginState.copy(nameError = true)
+        return if(loginState.value.name.isEmpty()) {
+            _loginState.update {
+                it.copy(nameError = true)
+            }
             resultChannel.send(LoginResult.Message(
                 UiText.StringResource(R.string.name_required, emptyList())
             ))

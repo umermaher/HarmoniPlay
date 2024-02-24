@@ -6,6 +6,7 @@ import com.harmoniplay.data.music.db.model.SongObject
 
 typealias SongDomain = Song
 
+
 data class Song(
     val id: Long,
     val title: String,

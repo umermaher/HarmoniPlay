@@ -2,6 +2,7 @@ package com.harmoniplay.ui.music.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,7 @@ fun CurrentSongLocator(
             visible = visible,
             enter = expandVertically(
                 expandFrom = Alignment.CenterVertically
-            ),
+            ) + fadeIn(),
             exit = shrinkVertically(
                 shrinkTowards = Alignment.CenterVertically
             ) + fadeOut()

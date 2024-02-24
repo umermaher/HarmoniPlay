@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -106,19 +107,11 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
-            Surface(shadowElevation = 5.dp) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.app_name),
-//                            fontFamily = FontFamily(listOf(Font(R.font.avenir_roman_bold))),
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    },
-//                    colors = TopAppBarDefaults.topAppBarColors(containerColor = primaryThemeColor)
-                )
-            }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(text = stringResource(id = R.string.app_name))
+                }
+            )
         }
     ) { values ->
         Column (
@@ -130,8 +123,7 @@ fun LoginScreen(
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.45f)
-                    .background(Color.White),
+                    .weight(0.45f),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -139,19 +131,16 @@ fun LoginScreen(
                 Image(
                     modifier = Modifier
                         .weight(1f),
-                    painter = painterResource(id = R.drawable.ic_music),
+                    painter = painterResource(id = R.drawable.img_onboard_music),
                     contentDescription = "App Icon in Login Screen",
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 30.dp),
+                        .fillMaxWidth(),
                     text = activity.getString(R.string.add_details_to_contine),
                     textAlign = TextAlign.Center,
-//                    color = textColor,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(30.dp))
             }
@@ -183,7 +172,6 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = stringResource(id = R.string.continue_string),
-                        color = Color.White,
                         modifier = Modifier
                             .padding(vertical = 8.dp),
                         fontWeight = FontWeight.Bold,

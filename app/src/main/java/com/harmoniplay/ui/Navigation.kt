@@ -28,8 +28,9 @@ fun Navigation(
 
         composable(route = Screen.LoginScreen.route) {
             val viewModel: LoginViewModel = hiltViewModel()
+            val state by viewModel.loginState.collectAsStateWithLifecycle()
             LoginScreen(
-                state = viewModel.loginState,
+                state = state,
                 permissionDialogQueue = viewModel.permissionDialogQueue,
                 results = viewModel.loginResults,
                 onEvent = viewModel::onEvent,
@@ -49,9 +50,10 @@ fun Navigation(
             val state by musicViewModel.state.collectAsStateWithLifecycle()
             val currentSongState by musicViewModel.currentSongState.collectAsStateWithLifecycle()
             val currentSongProgress = musicViewModel.currentSongProgress
-
+            val searchBarText by musicViewModel.searchBarText.collectAsStateWithLifecycle()
             MusicScreen(
                 state = state,
+                searchBarText = searchBarText,
                 currentSongState = currentSongState,
                 currentSongProgress = currentSongProgress,
                 result = musicViewModel.musicResult,

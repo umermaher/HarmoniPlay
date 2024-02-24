@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionSheetCard(
     modifier: Modifier = Modifier,
@@ -21,14 +24,12 @@ fun OptionSheetCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier
-            .clickable {
-                onClick()
-            },
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp), // Set the corner radius here
-//        colors = if(!isSelected) {
-//            CardDefaults.cardColors(containerColor = primaryContainerColor)
-//        } else CardDefaults.cardColors(containerColor = secondaryContainerColor.copy(alpha = 0.6f))
+        onClick = onClick,
+        colors = if(isSelected) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        } else CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row (
             modifier = Modifier
@@ -38,7 +39,6 @@ fun OptionSheetCard(
                 modifier = Modifier
                     .weight(1f),
                 text = stringResource(id = txtRes),
-//                color = textColor,
                 fontWeight = FontWeight.Bold
             )
         }

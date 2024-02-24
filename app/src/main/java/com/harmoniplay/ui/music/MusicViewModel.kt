@@ -1,5 +1,6 @@
 package com.harmoniplay.ui.music
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -7,6 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.harmoniplay.domain.music.MusicUseCase
+import com.harmoniplay.domain.music.PlayBy
+import com.harmoniplay.domain.user.UserManager
+import com.harmoniplay.service.ServiceActions
+import com.harmoniplay.utils.composables.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -27,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 open class MusicViewModel @Inject constructor(
     private val musicUseCase: MusicUseCase,
+    private val userManager: UserManager
 ): ViewModel() {
 
     private val _searchText = MutableStateFlow("")
@@ -34,7 +40,13 @@ open class MusicViewModel @Inject constructor(
 
     var currentSongProgress by mutableFloatStateOf(0f)
 
-    private val _state = MutableStateFlow(MusicState(isLoading = true))
+    private val _state = MutableStateFlow(MusicState(
+        isLoading = true,
+        topBarTitle = UiText.DynamicString(
+            value = userManager.getGreetings()
+        )
+    ))
+
     @OptIn(FlowPreview::class)
     val state = combine(
         _searchText.debounce(500),
@@ -49,6 +61,7 @@ open class MusicViewModel @Inject constructor(
                 song.title.replace(" ","").contains(searchText, ignoreCase = true)
             }
         } else songs
+        Log.i("isLoading", isLoading.toString())
 
         state.copy(
             songs = filteredSongs,
@@ -76,7 +89,7 @@ open class MusicViewModel @Inject constructor(
     private val updateSongProgressJob = viewModelScope.launch {
         while (true) {
             currentSongProgress = musicUseCase.getCurrentSongPosition()
-            delay(1000) // Delay for 1 second
+            delay(500) // Delay for 1 second
         }
     }
 
@@ -91,28 +104,20 @@ open class MusicViewModel @Inject constructor(
         }
 
         musicUseCase.error.onEach { error ->
+            _state.update { it.copy(
+                isLoading = false,
+            ) }
             error?.let {
                 resultChannel.send(
                     MusicResult.Message(it)
                 )
             }
-            _state.update { it.copy(
-                isLoading = false,
-            ) }
         }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: MusicEvent) {
         when (event) {
-            is MusicEvent.OnSongClick -> {
-                if(currentSongState.value.song?.id != event.id)
-                    currentSongProgress = 0f
-                if(_searchText.value.isNotEmpty()) {
-                    musicUseCase.selectSong(id = event.id)
-                } else {
-                    musicUseCase.selectSong(index = event.pos)
-                }
-            }
+            is MusicEvent.OnSongClick -> playSong(id = event.id, pos = event.pos)
 
             MusicEvent.OnPlayClick -> {
                 if(currentSongState.value.isPlaying) {
@@ -133,39 +138,85 @@ open class MusicViewModel @Inject constructor(
             is MusicEvent.OnSearchTextChange -> _searchText.value = event.query
 
             is MusicEvent.OnFavoriteIconClick -> viewModelScope.launch {
+                if(state.value.selectedPlayBy == PlayBy.ONLY_FAVORITE) {
+                    resultChannel.send(
+                        MusicResult.StartPlayerService(action = ServiceActions.STOP)
+                    )
+                }
                 musicUseCase.toggleFavoriteSong(event.index)
             }
 
             is MusicEvent.OnPlayBySettingsChanged -> viewModelScope.launch {
-                musicUseCase.changePlayBy(event.playBy)
+                onEvent(MusicEvent.ToggleMusicSettingsSheet)
+                if(event.playBy != state.value.selectedPlayBy) {
+                    resultChannel.send(
+                        MusicResult.StartPlayerService(action = ServiceActions.STOP)
+                    )
+                    musicUseCase.changePlayBy(event.playBy)
+                }
             }
 
-            MusicEvent.ClearSearchBar -> _state.update {
-                it.copy(searchBarText = "")
-            }
+            MusicEvent.ClearSearchBar -> _searchText.update { "" }
 
             MusicEvent.DismissPermissionDialog -> permissionDialogQueue.removeFirst()
 
-            MusicEvent.HideSearchBar -> _state.update {
-                it.copy(
-                    searchBarText = "",
-                    isSearchBarShowing = false,
-                )
+            MusicEvent.HideSearchBar -> {
+                _searchText.update { "" }
+                _state.update {
+                    it.copy(isSearchBarShowing = false)
+                }
             }
 
             is MusicEvent.OnPermissionResult -> {}
 
-            MusicEvent.ShowSearchBar -> _state.update {
-                it.copy(
-                    searchBarText = "",
-                    isSearchBarShowing = true,
-                )
+            MusicEvent.ShowSearchBar -> {
+                _searchText.update { "" }
+                _state.update {
+                    it.copy(isSearchBarShowing = true,)
+                }
             }
 
             MusicEvent.ToggleMusicSettingsSheet -> _state.update {
                 it.copy(
                     shouldShowMusicSettingsSheet = !it.shouldShowMusicSettingsSheet
                 )
+            }
+
+            MusicEvent.OnExitButtonClick -> _state.update {
+                it.copy(shouldShowQuitDialog = true)
+            }
+
+            MusicEvent.OnCancelToQuitClick -> _state.update {
+                it.copy(shouldShowQuitDialog = false)
+            }
+
+            MusicEvent.OnQuitButtonClick -> viewModelScope.launch {
+                _state.update {
+                    it.copy(shouldShowQuitDialog = false)
+                }
+                musicUseCase.shutDownPlayer()
+                resultChannel.send(
+                    MusicResult.StartPlayerService(
+                        action = ServiceActions.STOP,
+                        shouldExitFromApplication = true
+                    )
+                )
+            }
+        }
+    }
+
+    private fun playSong(id: Long, pos: Int) {
+        viewModelScope.launch {
+            if (currentSongState.value.song?.id != id) {
+                currentSongProgress = 0f
+                resultChannel.send(
+                    MusicResult.StartPlayerService(ServiceActions.START)
+                )
+            }
+            if (_searchText.value.isNotEmpty()) {
+                musicUseCase.selectSong(id = id)
+            } else {
+                musicUseCase.selectSong(index = pos)
             }
         }
     }

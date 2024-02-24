@@ -32,7 +32,7 @@ class MusicRepositoryImpl(
     @SuppressLint("Recycle")
     override suspend fun fetchSongs(): Resource2<List<LocalSong>> {
 
-        if(context.hasPermission(
+        if(!context.hasPermission(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     Manifest.permission.READ_MEDIA_AUDIO
                 } else {
@@ -141,13 +141,13 @@ class MusicRepositoryImpl(
 
     override suspend fun addSong(songObject: SongObject) {
         realm.write {
-            copyToRealm(instance = songObject, updatePolicy = UpdatePolicy.ALL)
+            this.copyToRealm(instance = songObject, updatePolicy = UpdatePolicy.ALL)
         }
     }
 
     override suspend fun deleteSong(songObject: SongObject) {
         realm.write {
-            val latestSong = findLatest(songObject) ?: return@write
+            val latestSong = copyToRealm(instance = songObject, updatePolicy = UpdatePolicy.ALL) // Assuming songObject is unmanaged
             delete(latestSong)
         }
     }

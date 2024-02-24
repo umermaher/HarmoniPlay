@@ -50,7 +50,7 @@ fun OnBoardMessage(
 
         Text(
             text = stringResource(id = msgRes),
-//            style = MaterialTheme.typography.bodyMedium.copy(color = onSurfaceColor),
+            style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center
         )
     }

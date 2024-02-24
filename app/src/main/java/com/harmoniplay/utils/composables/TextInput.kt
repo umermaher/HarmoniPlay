@@ -2,23 +2,22 @@ package com.harmoniplay.utils.composables
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -50,23 +49,21 @@ fun TextInput(
         value = value,
         onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-//        textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
-//            fontFamily = FontFamily.SansSerif,
-//        ),
         leadingIcon = inputType.icon,
         label = {
-            Text(text = inputType.label)
+            Text(
+                text = inputType.label,
+                style = MaterialTheme.typography.labelLarge
+            )
         },
         isError = isError,
-//        shape = RoundedCornerShape(10.dp),
-//        colors = TextFieldDefaults.colors(
-//            unfocusedContainerColor = textFieldBg,
-//            focusedContainerColor = textFieldBg,
-//            focusedIndicatorColor = Color.Transparent,
-//            unfocusedIndicatorColor = Color.Transparent,
-//            disabledIndicatorColor = Color.Transparent,
-//            errorIndicatorColor = Color.Transparent
-//        ),
+        shape = RoundedCornerShape(10.dp),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            errorIndicatorColor = Color.Transparent
+        ),
         singleLine = true,
         keyboardOptions = inputType.keyboardOptions,
         visualTransformation = inputType.visualTransformation,
@@ -75,7 +72,7 @@ fun TextInput(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun RASearchBar(
+fun HPSearchBar(
     modifier: Modifier,
     isVisible: Boolean,
     value: String,
@@ -98,17 +95,12 @@ fun RASearchBar(
 
     AnimatedVisibility(
         visible = isVisible,
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        enter = slideInHorizontally() + fadeIn()
+        modifier = modifier,
+        enter = slideInHorizontally() + fadeIn(),
+        exit = shrinkHorizontally() + fadeOut()
     ) {
         Row(
-            modifier = Modifier
-//                .background(
-//                    color = selectorColor,
-//                    shape = RoundedCornerShape(100)
-//                )
-            ,
+            modifier = Modifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
@@ -117,15 +109,13 @@ fun RASearchBar(
                 modifier = Modifier
                     .height(52.dp)
                     .weight(1f)
-                    .background(color = Color.Transparent)
                     .defaultMinSize(minHeight = 48.dp)
                     .focusRequester(focusRequester),
                 placeholder = {
                     Text(text = stringResource(id = R.string.search_dots))
                 },
+                shape = RoundedCornerShape(percent = 100),
                 colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
@@ -135,15 +125,13 @@ fun RASearchBar(
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Search
                 ),
-//                textStyle = LocalTextStyle.current.copy(color = textColor),
                 leadingIcon = {
                     IconButton(
                         onClick = hide
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "Back Button",
-//                            tint = textColor
                         )
                     }
                 },
@@ -153,15 +141,13 @@ fun RASearchBar(
                             onClick = clear
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = Icons.Rounded.Close,
                                 contentDescription = "Clear field",
-//                                tint = textColor
                             )
                         }
                     }
                 }
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
     }
 }

@@ -23,5 +23,9 @@
     <string name="okay">Okay</string>
     <string name="permanently_declined_permission_msg">It seems you permanently declined %1$s permission. You can go to app settings to grant it.</string>
     <string name="notification_access_msg">This app needs notification permission so that it will notify you all the events.</string>
-    <string name="storage_access_for_music_msg">This app needs access to device\\\'s read storage so that you can play your songs and enjoy with the app features.</string>
+    <string name="storage_access_for_music_msg">This app needs access to device\'s read storage so that you can play your songs and enjoy with the app features.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="quit_msg">Do you really want to quit?</string>
+    <string name="quit">Quit!</string>
 </resources>

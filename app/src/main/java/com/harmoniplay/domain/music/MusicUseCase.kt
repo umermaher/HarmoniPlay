@@ -23,4 +23,5 @@ interface MusicUseCase {
     fun skipToPreviousSong()
     fun changeProgress(value: Long)
     suspend fun changePlayBy(value: PlayBy)
+    fun shutDownPlayer()
 }

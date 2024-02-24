@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
@@ -44,11 +45,16 @@ class MusicUseCaseImpl(
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    private val favSongsIds = musicRepository.getFavoriteSongsIds().map {
+        it
+    }.stateIn(scope, SharingStarted.WhileSubscribed(), emptyList<Long>())
+
     override val songs = combine(
         _localSongs,
-        musicRepository.getFavoriteSongsIds(),
+        favSongsIds,
         playBy
     ) { songs, favIds, pb ->
+
         when (pb) {
             ALL -> songs.map {
                 it.toSongDomain(
@@ -61,7 +67,7 @@ class MusicUseCaseImpl(
                 it.toSongDomain(true)
             }
         }
-    }.stateIn(scope, SharingStarted.WhileSubscribed(), emptyList<SongDomain>())
+    }.stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
 
     private val _currentSong = MutableStateFlow<SongDomain?>(null)
     override val currentSong: StateFlow<Song?>
@@ -110,36 +116,22 @@ class MusicUseCaseImpl(
 
     override suspend fun getAllSongs() {
         when (val res = musicRepository.fetchSongs()) {
-            is Resource2.Error -> _error.emit(res.message)
+            is Resource2.Error -> {
+                Log.i("Message in usecase", res.message.toString())
+                _error.emit(res.message)
+            }
             is Resource2.Success -> {
                 _localSongs.update { res.data ?: emptyList() }
-                while(_localSongs.value.isNotEmpty() && hasMediaItems) {
+                while(res.data?.isNotEmpty() == true && hasMediaItems) {
                     if(songs.value.isNotEmpty()) {
                         resumeState()
                         break
                     }
                     delay(TIME_UPDATED_INTERVAL)
                 }
-                delay(TIME_UPDATED_INTERVAL)
+                delay(TIME_UPDATED_INTERVAL * 2)
                 _isLoading.update { false }
-                Log.i("Resuming","break")
             }
-        }
-    }
-
-    override suspend fun toggleFavoriteSong(index: Int) {
-        val song = songs.value[index]
-        val songObject = song.toSongObject()
-        if(song.isFavorite) {
-            if (playBy.value == ONLY_FAVORITE) {
-                exoPlayer.removeMediaItem(index)
-                _isPlaying.update { false }
-                _currentSong.update { null }
-                _currentSongIndex.update { null }
-            }
-            musicRepository.deleteSong(songObject = songObject)
-        } else {
-            musicRepository.addSong(songObject = songObject)
         }
     }
 
@@ -185,12 +177,39 @@ class MusicUseCaseImpl(
 
     override fun changeProgress(value: Long) = exoPlayer.seekTo(value)
 
+    override suspend fun toggleFavoriteSong(index: Int) {
+        val song = songs.value[index]
+        val songObject = song.toSongObject()
+        if(song.isFavorite) {
+            if (playBy.value == ONLY_FAVORITE) {
+                exoPlayer.removeMediaItem(index)
+                _isPlaying.update { false }
+                _currentSong.update { null }
+                _currentSongIndex.update { null }
+            }
+            musicRepository.deleteSong(songObject = songObject)
+        } else {
+            musicRepository.addSong(songObject = songObject)
+        }
+    }
+
     override suspend fun changePlayBy(value: PlayBy) {
+        val hadCurrentSong = _currentSong.value != null
         _isPlaying.update { false }
         _currentSong.update { null }
         _currentSongIndex.update { null }
         userManager.playMusicBy(value.name)
+        exoPlayer.clearMediaItems()
+        if(hadCurrentSong && favSongsIds.value.isEmpty()) {
+            delay(500)
+        }
         _playBy.update { value }
+    }
+
+    override fun shutDownPlayer() {
+        _isPlaying.update { false }
+        _currentSong.update { null }
+        _currentSongIndex.update { null }
         exoPlayer.clearMediaItems()
     }
 

@@ -47,19 +47,19 @@ fun SongCard(
     onFavoriteIconClick: () -> Unit = {  }
 ) {
 
-//    val cardColor by animateColorAsState(
-//        targetValue = if (isCurrentSong) {
-//            selectorColor.copy(alpha = 0.5f)
-//        } else primaryContainerColor,
-//        animationSpec = tween(durationMillis = 200),
-//        label = "Animated card Color"
-//    )
+    val cardColor by animateColorAsState(
+        targetValue = if (isCurrentSong) {
+            MaterialTheme.colorScheme.secondaryContainer
+        } else MaterialTheme.colorScheme.surfaceVariant,
+        animationSpec = tween(durationMillis = 200),
+        label = "Animated card Color"
+    )
 
     Card(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(16.dp), // Set the corner radius here
-//        colors = CardDefaults.cardColors(containerColor = cardColor)
+        colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -100,7 +100,7 @@ fun SongCard(
                     )
                     Text(
                         text = song.artist,
-//                        style = MaterialTheme.typography.bodyMedium.copy(color = onSurfaceColor)
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -131,7 +131,6 @@ fun SongCard(
             }
 
             if(isCurrentSong && currentSongProgress != null) {
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -141,11 +140,6 @@ fun SongCard(
                         value = currentSongProgress,
                         onValueChange = onProgressValueChanged,
                         valueRange = 0f.. song.duration.toFloat(),
-//                        colors = SliderDefaults.colors(
-//                            thumbColor = primaryThemeColor,  // Change thumb color if needed
-//                            activeTrackColor = secondaryContainerColor, // Change the color of the active track
-//                            inactiveTrackColor = textFieldBg // Change the color of the inactive track
-//                        )
                     )
                 }
             }
