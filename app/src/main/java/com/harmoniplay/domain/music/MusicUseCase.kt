@@ -13,9 +13,10 @@ interface MusicUseCase {
     val error: SharedFlow<String?>
     suspend fun getAllSongs()
 //    suspend fun getAllFavSongsIds(): Flow<List<Long>>
-    suspend fun toggleFavoriteSong(index: Int)
     fun selectSong(index: Int)
     fun selectSong(id: Long)
+    suspend fun toggleFavoriteSong(index: Int)
+    suspend fun toggleFavoriteSong(song: SongDomain)
     fun getCurrentSongPosition(): Float
     fun play()
     fun pause()

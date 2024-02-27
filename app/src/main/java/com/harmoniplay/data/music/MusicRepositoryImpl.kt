@@ -66,7 +66,7 @@ class MusicRepositoryImpl(
                         //get values of a column for a given audio file
                         var name = cursor.getString(nameColumn)
                         // other audio files should not be included
-                        if (name.lowercase().contains("aud") || name.lowercase().contains("slack"))
+                        if (name.lowercase().contains("auds") || name.lowercase().contains("slack"))
                             continue
 
                         val id = cursor.getLong(columnId)

@@ -14,7 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.harmoniplay.R
 
 private val DarkColorScheme = darkColorScheme(
     primary = primaryColorDark,
@@ -31,6 +34,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = onSurfaceVariantDark,
     secondaryContainer = secondaryContainerDark,
     onSecondaryContainer = onSecondaryContainerDark,
+    outline = outlinedDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -47,6 +51,7 @@ private val LightColorScheme = lightColorScheme(
     surface = surfaceLight,
     secondaryContainer = secondaryContainerLight,
     onSecondaryContainer = onSecondaryContainerLight,
+    outline = outlinedLight
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
@@ -74,11 +79,13 @@ fun HarmoniPlayTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    val context = LocalContext.current
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = //ContextCompat.getColor(context, R.color.primary)
+            colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }

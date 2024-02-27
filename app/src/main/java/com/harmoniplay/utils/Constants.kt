@@ -18,3 +18,5 @@ const val MUSIC_SCREEN_RC = 100
 
 //action
 const val ACTION_SHOW_MUSIC_SCREEN = "ACTION_SHOW_MUSIC_SCREEN"
+
+const val MUSIC_BAR_COUNT = 20

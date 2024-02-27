@@ -28,7 +28,8 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Starting"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,6 +38,13 @@
         </activity>
 
         <service android:name=".service.PlayerService" android:foregroundServiceType="mediaPlayback" />
+
+        <receiver android:name=".data.music.volume.VolumeChangeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.VOLUME_CHANGED_ACTION" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

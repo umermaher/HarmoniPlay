@@ -124,7 +124,7 @@ fun SongCard(
                             contentDescription = "Favorite button",
                             tint = if (isFavorite) {
                                 Color.Red
-                            } else Color.Gray
+                            } else MaterialTheme.colorScheme.outline
                         )
                     }
                 }

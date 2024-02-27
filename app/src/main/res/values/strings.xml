@@ -28,4 +28,8 @@
     <string name="no">No</string>
     <string name="quit_msg">Do you really want to quit?</string>
     <string name="quit">Quit!</string>
+    <string name="song_removed_from_favorite">Song removed from Favorites!</string>
+    <string name="undo">Undo</string>
+    <string name="knob">Knob</string>
+    <string name="done">Done</string>
 </resources>

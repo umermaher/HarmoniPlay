@@ -7,6 +7,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.harmoniplay.data.music.LocalSong
 import com.harmoniplay.data.music.MusicRepository
+import com.harmoniplay.data.music.db.model.SongObject
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.music.PlayBy.*
 import com.harmoniplay.utils.Resource2
@@ -90,7 +91,7 @@ class MusicUseCaseImpl(
         get() = _error.asSharedFlow()
 
     // Check if the ExoPlayer has media items
-    private val hasMediaItems: Boolean = exoPlayer.currentMediaItem != null
+    private fun hasMediaItems(): Boolean = exoPlayer.currentMediaItem != null
 //    private val hasMediaItems: Boolean = exoPlayer.playbackState != Player.STATE_IDLE &&
 //            !exoPlayer.currentTimeline.isEmpty
 
@@ -122,14 +123,14 @@ class MusicUseCaseImpl(
             }
             is Resource2.Success -> {
                 _localSongs.update { res.data ?: emptyList() }
-                while(res.data?.isNotEmpty() == true && hasMediaItems) {
+                while(res.data?.isNotEmpty() == true && hasMediaItems()) {
                     if(songs.value.isNotEmpty()) {
                         resumeState()
                         break
                     }
                     delay(TIME_UPDATED_INTERVAL)
                 }
-                delay(TIME_UPDATED_INTERVAL * 2)
+                delay(TIME_UPDATED_INTERVAL * 3)
                 _isLoading.update { false }
             }
         }
@@ -191,6 +192,11 @@ class MusicUseCaseImpl(
         } else {
             musicRepository.addSong(songObject = songObject)
         }
+    }
+
+    override suspend fun toggleFavoriteSong(song: SongDomain) {
+        val index = songs.value.indexOf(song)
+        toggleFavoriteSong(index)
     }
 
     override suspend fun changePlayBy(value: PlayBy) {

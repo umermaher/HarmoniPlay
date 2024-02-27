@@ -34,7 +34,6 @@ fun ConfirmDialog(
             Button(onClick = onOkClick) {
                 Text(
                     text = confirmText,
-                    color = Color.White,
                     modifier = Modifier
                         .padding(vertical = 8.dp),
                     fontWeight = FontWeight.Bold,
@@ -45,8 +44,8 @@ fun ConfirmDialog(
             TextButton(onClick = onDismiss) {
                 Text(
                     text = cancelText,
-                    modifier = Modifier
-                        .padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    fontWeight = FontWeight.Bold,
                 )
             }
         },
@@ -62,9 +61,5 @@ fun ConfirmDialog(
             Text(text = text)
         },
         modifier = modifier,
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        )
     )
 }

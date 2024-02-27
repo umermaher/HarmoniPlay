@@ -1,21 +1,17 @@
 package com.harmoniplay.ui.music
 
-import android.content.Intent
-import android.util.Log
+import android.Manifest
+import android.annotation.SuppressLint
+import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.tween
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -23,13 +19,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -38,28 +30,31 @@ import androidx.compose.ui.unit.dp
 import com.harmoniplay.R
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.ui.MainActivity
-import com.harmoniplay.ui.music.components.CurrentSongBar
-import com.harmoniplay.ui.music.components.CurrentSongLocator
+import com.harmoniplay.ui.music.components.MusicScreenContent
 import com.harmoniplay.ui.music.components.MusicTopBar
-import com.harmoniplay.ui.music.components.SongCard
 import com.harmoniplay.utils.composables.ConfirmDialog
 import com.harmoniplay.utils.composables.GeneralBottomSheet
+import com.harmoniplay.utils.composables.MusicPermissionTextProvider
+import com.harmoniplay.utils.composables.NotificationPermissionTextProvider
 import com.harmoniplay.utils.composables.ObserveAsEvents
 import com.harmoniplay.utils.composables.OnBoardMessage
 import com.harmoniplay.utils.composables.OptionSheetCard
+import com.harmoniplay.utils.composables.PermissionDialog
 import com.harmoniplay.utils.composables.ProgressIndicator
+import com.harmoniplay.utils.hasPermissions
+import com.harmoniplay.utils.openAppSettings
 import com.harmoniplay.utils.showToast
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicScreen(
     state: MusicState,
     searchBarText: String,
     currentSongState: CurrentSongState,
-    currentSongProgress: Float,
+    permissionDialogQueue: SnapshotStateList<String>,
     result: Flow<MusicResult>,
     onEvent: (MusicEvent) -> Unit,
 ) {
@@ -67,12 +62,43 @@ fun MusicScreen(
     val activity = LocalContext.current as MainActivity
 
     val musicSettingSheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
-    val isScrolling by remember {
-        derivedStateOf {
-            lazyListState.isScrollInProgress
+    val scope = rememberCoroutineScope()
+
+    val permissionsToRequest = remember {
+        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.POST_NOTIFICATIONS
+        } else null
+
+        if(notificationPermission != null) {
+            arrayOf(storagePermission, notificationPermission)
+        } else arrayOf(storagePermission)
+    }
+
+    val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { perms ->
+            permissionsToRequest.forEach { permission ->
+                onEvent( MusicEvent.OnPermissionResult(
+                    permission = permission,
+                    isGranted = perms[permission] == true
+                ) )
+            }
+        }
+    )
+
+    LaunchedEffect(key1 = true) {
+        // Checking Permission in Login screen is not enough
+        // User can remove it from the settings too
+        // To handle this working with permission is necessary
+        if(!activity.hasPermissions(permissionsToRequest.toList())) {
+            multiplePermissionResultLauncher.launch(permissionsToRequest)
         }
     }
 
@@ -91,7 +117,7 @@ fun MusicScreen(
 
             is MusicResult.StartPlayerService -> {
                 activity.startPlayerService(res.action)
-                if(res.shouldExitFromApplication) {
+                if (res.shouldExitFromApplication) {
                     activity.finish()
                 }
             }
@@ -109,11 +135,9 @@ fun MusicScreen(
                 state = state,
                 searchBarText = searchBarText,
                 onEvent = onEvent,
-                scrollBehavior = scrollBehavior,
-                onExitClick = {
-                    onEvent(MusicEvent.OnExitButtonClick)
-                })
-        }
+                scrollBehavior = scrollBehavior
+            )
+        },
     ) { values ->
         when {
             state.songs.isEmpty() && !state.isLoading -> {
@@ -127,6 +151,7 @@ fun MusicScreen(
                         titleRes = R.string.no_fav_songs_msg,
                         msgRes = R.string.add_fav_songs_msg
                     )
+
                     PlayBy.ALL -> OnBoardMessage(
                         modifier = modifier,
                         imgRes = R.drawable.img_onboard_music,
@@ -139,91 +164,20 @@ fun MusicScreen(
             state.isLoading -> ProgressIndicator()
 
             else -> {
-                Column(
+                MusicScreenContent(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(values)
-                ) {
-
-                    Box(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            item {
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-
-                            itemsIndexed(
-                                items = state.songs,
-                                key = { index, song ->
-                                    if (index == 0) {
-                                        index
-                                    } else song.id
-                                }
-                            ) { index, song ->
-                                val isCurrentSong = currentSongState.song?.id == song.id
-                                SongCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                        .animateItemPlacement(
-                                            animationSpec = tween(
-                                                durationMillis = 300
-                                            )
-                                        ),
-                                    song = song,
-                                    isCurrentSong = isCurrentSong,
-                                    currentSongProgress = if (isCurrentSong) {
-                                        currentSongProgress
-                                    } else null,
-                                    onFavoriteIconClick = {
-                                        onEvent(MusicEvent.OnFavoriteIconClick(index))
-                                    },
-                                    onProgressValueChanged = {
-                                        onEvent(MusicEvent.OnProgressValueChanged(it))
-                                    },
-                                    onClick = {
-                                        onEvent(
-                                            MusicEvent.OnSongClick(song.id, index)
-                                        )
-                                    }
-                                )
-                            }
-                        }
-
-                        CurrentSongLocator(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .offset(x = (-10).dp, y = (-20).dp),
-                            visible = isScrolling && currentSongState.song != null
-                        ) {
-                            onEvent(
-                                MusicEvent.OnScrollToCurrentSongClick
-                            )
-                        }
-                    }
-
-                    CurrentSongBar(
-                        currentSongState = currentSongState,
-                        skipPrevious = {
-                            onEvent(MusicEvent.SkipPrevious)
-                        },
-                        onPlayClick = {
-                            onEvent(MusicEvent.OnPlayClick)
-                        },
-                        skipNext = {
-                            onEvent(MusicEvent.SkipNext)
-                        }
-                    )
-                }
+                        .padding(values),
+                    state = state,
+                    currentSongState = currentSongState,
+                    lazyListState = lazyListState,
+                    onEvent = onEvent
+                )
             }
         }
     }
 
-    if(state.shouldShowMusicSettingsSheet) {
+    if (state.shouldShowMusicSettingsSheet) {
         GeneralBottomSheet(
             sheetState = musicSettingSheetState,
             titleRes = R.string.play,
@@ -250,7 +204,7 @@ fun MusicScreen(
         }
     }
 
-    if(state.shouldShowQuitDialog) {
+    if (state.shouldShowQuitDialog) {
         ConfirmDialog(
             title = stringResource(id = R.string.quit),
             text = stringResource(id = R.string.quit_msg),
@@ -262,4 +216,34 @@ fun MusicScreen(
             }
         )
     }
+
+    permissionDialogQueue
+        .reversed()
+        .forEach { permission ->
+            PermissionDialog(
+                permissionTextProvider = when (permission) {
+                    Manifest.permission.READ_EXTERNAL_STORAGE ->
+                        MusicPermissionTextProvider()
+                    Manifest.permission.READ_MEDIA_AUDIO ->
+                        MusicPermissionTextProvider()
+                    Manifest.permission.POST_NOTIFICATIONS ->
+                        NotificationPermissionTextProvider()
+
+                    else -> return@forEach
+                },
+                isPermanentlyDeclined = !activity.shouldShowRequestPermissionRationale(
+                    permission
+                ),
+                onDismiss = {
+                    onEvent(MusicEvent.DismissPermissionDialog)
+                },
+                onOkClick = {
+                    onEvent(MusicEvent.DismissPermissionDialog)
+                    multiplePermissionResultLauncher.launch(
+                        arrayOf(permission)
+                    )
+                },
+                onGoToAppSettingsClick = activity::openAppSettings
+            )
+        }
 }

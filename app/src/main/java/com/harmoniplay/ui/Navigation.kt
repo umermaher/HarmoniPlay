@@ -49,17 +49,15 @@ fun Navigation(
             val musicViewModel: MusicViewModel = hiltViewModel()
             val state by musicViewModel.state.collectAsStateWithLifecycle()
             val currentSongState by musicViewModel.currentSongState.collectAsStateWithLifecycle()
-            val currentSongProgress = musicViewModel.currentSongProgress
             val searchBarText by musicViewModel.searchBarText.collectAsStateWithLifecycle()
             MusicScreen(
                 state = state,
                 searchBarText = searchBarText,
                 currentSongState = currentSongState,
-                currentSongProgress = currentSongProgress,
+                permissionDialogQueue = musicViewModel.permissionDialogQueue,
                 result = musicViewModel.musicResult,
                 onEvent = musicViewModel::onEvent,
             )
         }
-
     }
 }

@@ -7,9 +7,11 @@ import android.provider.MediaStore
 import androidx.media3.exoplayer.ExoPlayer
 import com.harmoniplay.data.music.MusicRepository
 import com.harmoniplay.data.music.MusicRepositoryImpl
+import com.harmoniplay.data.music.volume.AndroidMusicStreamVolumeManager
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.music.MusicUseCase
 import com.harmoniplay.domain.music.MusicUseCaseImpl
+import com.harmoniplay.domain.volume.StreamVolumeManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,5 +69,11 @@ object ViewModelScopedModule {
             mediaStoreUri, projection, null, null, order
         )
     }
+
+    @Provides
+    @ViewModelScoped
+    fun provideVolumeStreamManager(
+        @ApplicationContext context: Context,
+    ): StreamVolumeManager = AndroidMusicStreamVolumeManager(context)
 
 }

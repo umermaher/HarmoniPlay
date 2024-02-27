@@ -1,5 +1,7 @@
 package com.harmoniplay.ui.music
 
+import android.Manifest
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -10,7 +12,10 @@ import androidx.lifecycle.viewModelScope
 import com.harmoniplay.domain.music.MusicUseCase
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.user.UserManager
+import com.harmoniplay.domain.volume.StreamVolumeManager
 import com.harmoniplay.service.ServiceActions
+import com.harmoniplay.ui.login.LoginResult
+import com.harmoniplay.utils.Screen
 import com.harmoniplay.utils.composables.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -22,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -32,13 +38,12 @@ import javax.inject.Inject
 @HiltViewModel
 open class MusicViewModel @Inject constructor(
     private val musicUseCase: MusicUseCase,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val musicStreamVolumeManager: StreamVolumeManager
 ): ViewModel() {
 
     private val _searchText = MutableStateFlow("")
     val searchBarText = _searchText.asStateFlow()
-
-    var currentSongProgress by mutableFloatStateOf(0f)
 
     private val _state = MutableStateFlow(MusicState(
         isLoading = true,
@@ -61,7 +66,6 @@ open class MusicViewModel @Inject constructor(
                 song.title.replace(" ","").contains(searchText, ignoreCase = true)
             }
         } else songs
-        Log.i("isLoading", isLoading.toString())
 
         state.copy(
             songs = filteredSongs,
@@ -75,21 +79,24 @@ open class MusicViewModel @Inject constructor(
         musicUseCase.isPlaying,
         musicUseCase.currentSong,
         musicUseCase.currentSongIndex,
+        musicStreamVolumeManager.volume,
         _currentSongState
-    ) { isPlaying, song, index, state ->
-        currentSongProgress = musicUseCase.getCurrentSongPosition()
-
+    ) { isPlaying, song, index, volume, state ->
         state.copy(
             isPlaying = isPlaying,
             song = song,
-            currentSongIndex = index
+            currentSongIndex = index,
+            currentSongProgress = musicUseCase.getCurrentSongPosition(),
+            volume = volume
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _currentSongState.value)
 
     private val updateSongProgressJob = viewModelScope.launch {
         while (true) {
-            currentSongProgress = musicUseCase.getCurrentSongPosition()
-            delay(500) // Delay for 1 second
+            _currentSongState.update {
+                it.copy(currentSongProgress = musicUseCase.getCurrentSongPosition())
+            }
+            delay(1000) // Delay for 1 second
         }
     }
 
@@ -158,7 +165,6 @@ open class MusicViewModel @Inject constructor(
 
             MusicEvent.ClearSearchBar -> _searchText.update { "" }
 
-            MusicEvent.DismissPermissionDialog -> permissionDialogQueue.removeFirst()
 
             MusicEvent.HideSearchBar -> {
                 _searchText.update { "" }
@@ -167,8 +173,6 @@ open class MusicViewModel @Inject constructor(
                 }
             }
 
-            is MusicEvent.OnPermissionResult -> {}
-
             MusicEvent.ShowSearchBar -> {
                 _searchText.update { "" }
                 _state.update {
@@ -176,9 +180,23 @@ open class MusicViewModel @Inject constructor(
                 }
             }
 
+            is MusicEvent.OnVolumeChange -> musicStreamVolumeManager.changeMusicVolumeByPercentage(event.volume)
+
+            MusicEvent.DismissPermissionDialog -> permissionDialogQueue.removeFirst()
+
+            is MusicEvent.OnPermissionResult -> onPermissionResult(
+                permission = event.permission, isGranted = event.isGranted
+            )
+
             MusicEvent.ToggleMusicSettingsSheet -> _state.update {
                 it.copy(
                     shouldShowMusicSettingsSheet = !it.shouldShowMusicSettingsSheet
+                )
+            }
+
+            MusicEvent.ToggleMusicKnob -> _state.update {
+                it.copy(
+                    shouldShowMusicKnob = !it.shouldShowMusicKnob
                 )
             }
 
@@ -208,7 +226,9 @@ open class MusicViewModel @Inject constructor(
     private fun playSong(id: Long, pos: Int) {
         viewModelScope.launch {
             if (currentSongState.value.song?.id != id) {
-                currentSongProgress = 0f
+                _currentSongState.update {
+                    it.copy(currentSongProgress = 0f)
+                }
                 resultChannel.send(
                     MusicResult.StartPlayerService(ServiceActions.START)
                 )
@@ -240,8 +260,35 @@ open class MusicViewModel @Inject constructor(
         }
     }
 
+    private fun onPermissionResult(
+        permission: String,
+        isGranted: Boolean
+    ) {
+        if(!isGranted && !permissionDialogQueue.contains(permission)) {
+            permissionDialogQueue.add(permission)
+        }
+        if(isGranted) {
+            val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_AUDIO
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+            val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.POST_NOTIFICATIONS
+            } else null
+
+            if(permission == storagePermission || permission == notificationPermission) {
+                viewModelScope.launch {
+                    musicUseCase.getAllSongs()
+                }
+            }
+        }
+    }
+
     override fun onCleared() {
         updateSongProgressJob.cancel()
+        musicStreamVolumeManager.unRegisterVolumeChangeListener()
         super.onCleared()
     }
+
 }

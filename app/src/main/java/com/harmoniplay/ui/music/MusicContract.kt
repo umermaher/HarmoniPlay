@@ -7,6 +7,7 @@ import com.harmoniplay.domain.music.Song
 import com.harmoniplay.service.ServiceActions
 import com.harmoniplay.utils.composables.UiText
 
+@Immutable
 data class MusicState(
     val isLoading: Boolean = true,
     val songs: List<Song> = emptyList(),
@@ -25,13 +26,17 @@ data class MusicState(
     val shouldAnimateItemPlacements: Boolean = false,
     val isSearchBarShowing: Boolean = false,
     val shouldShowMusicSettingsSheet: Boolean = false,
+    val shouldShowMusicKnob: Boolean = false,
     val shouldShowQuitDialog: Boolean = false,
 )
 
+@Immutable
 data class CurrentSongState(
     val isPlaying: Boolean = false,
     val currentSongIndex: Int ?= null,
-    val song: Song?= null
+    val song: Song?= null,
+    val currentSongProgress: Float = 0f,
+    val volume: Float = 0f
 )
 
 sealed class MusicResult {
@@ -49,6 +54,8 @@ sealed interface MusicEvent {
     data object HideSearchBar: MusicEvent
     data object ClearSearchBar: MusicEvent
     data object ToggleMusicSettingsSheet: MusicEvent
+    data object ToggleMusicKnob: MusicEvent
+    data class OnVolumeChange(val volume: Float): MusicEvent
     data class OnSongClick(val id: Long, val pos: Int): MusicEvent
     data class OnFavoriteIconClick(val index: Int): MusicEvent
     data class OnProgressValueChanged(val value: Float): MusicEvent
@@ -58,7 +65,7 @@ sealed interface MusicEvent {
     data object SkipNext: MusicEvent
     data object SkipPrevious: MusicEvent
     data object OnQuitButtonClick: MusicEvent
-    object OnCancelToQuitClick: MusicEvent
+    data object OnCancelToQuitClick: MusicEvent
 }
 
 data class PlayByOption(

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +28,8 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,8 +47,12 @@ fun MusicTopBar(
     searchBarText: String,
     scrollBehavior: TopAppBarScrollBehavior,
     onEvent: (MusicEvent) -> Unit,
-    onExitClick: () -> Unit,
 ) {
+
+    val volumeIconButtonRotationState by animateFloatAsState(
+        targetValue = if(state.shouldShowMusicKnob) 90f else 0f,
+        label = "Volume button rotation"
+    )
 
     val settingsIconScale by rememberInfiniteTransition(label = "favIconAnimation")
         .animateFloat(
@@ -91,7 +100,9 @@ fun MusicTopBar(
             },
             navigationIcon = {
                 IconButton(
-                    onClick = onExitClick
+                    onClick = {
+                        onEvent(MusicEvent.OnExitButtonClick)
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.PowerSettingsNew,
@@ -100,6 +111,22 @@ fun MusicTopBar(
                 }
             },
             actions = {
+                if(state.songs.isNotEmpty()) {
+                    IconButton(
+                        modifier = Modifier
+                            .rotate(volumeIconButtonRotationState),
+                        onClick = {
+                            onEvent(MusicEvent.ToggleMusicKnob)
+                        }
+                    ) {
+                        Icon(
+                            modifier = Modifier,
+                            imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
+                            contentDescription = "Music Settings",
+                        )
+                    }
+                }
+
                 IconButton(
                     onClick = {
                         onEvent(MusicEvent.ToggleMusicSettingsSheet)
