@@ -118,7 +118,7 @@ class MusicUseCaseImpl(
     override suspend fun getAllSongs() {
         when (val res = musicRepository.fetchSongs()) {
             is Resource2.Error -> {
-                Log.i("Message in usecase", res.message.toString())
+                Log.i("error in fetching songs", res.message.toString())
                 _error.emit(res.message)
             }
             is Resource2.Success -> {

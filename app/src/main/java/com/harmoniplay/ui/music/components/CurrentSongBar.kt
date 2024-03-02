@@ -64,93 +64,88 @@ fun CurrentSongBar(
             )
         )
     ) {
-
-        Box(
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
                 .background(color = MaterialTheme.colorScheme.primary)
+                .fillMaxWidth()
+                .padding(start = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .padding(start = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
 
-                LoadImageWithFallback(
+            LoadImageWithFallback(
+                modifier = Modifier
+                    .weight(0.2f)
+                    .height(35.dp)
+                    .clip(shape = RoundedCornerShape(10.dp)),
+                uri = currentSongState.song?.artworkUri
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
                     modifier = Modifier
-                        .weight(0.2f)
-                        .height(35.dp)
-                        .clip(shape = RoundedCornerShape(10.dp)),
-                    uri = currentSongState.song?.artworkUri
+                        .fillMaxWidth()
+                        // Rendering to an offscreen buffer is required to get the faded edges' alpha to be
+                        // applied only to the text, and not whatever is drawn below this composable (e.g. the
+                        // window).
+                        .graphicsLayer {
+                            compositingStrategy = CompositingStrategy.Offscreen
+                        }
+                        .drawWithContent {
+                            drawContent()
+                            drawFadedEdge(leftEdge = true)
+                            drawFadedEdge(leftEdge = false)
+                        }
+                        .basicMarquee(
+                            // Animate forever.
+                            iterations = Int.MAX_VALUE,
+                            spacing = MarqueeSpacing(0.dp)
+                        )
+                        .padding(start = 10.dp),
+                    text = currentSongState.song?.title.toString(),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.ExtraBold
+                    ),
+                    color = contentColor
                 )
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            // Rendering to an offscreen buffer is required to get the faded edges' alpha to be
-                            // applied only to the text, and not whatever is drawn below this composable (e.g. the
-                            // window).
-                            .graphicsLayer {
-                                compositingStrategy = CompositingStrategy.Offscreen
-                            }
-                            .drawWithContent {
-                                drawContent()
-                                drawFadedEdge(leftEdge = true)
-                                drawFadedEdge(leftEdge = false)
-                            }
-                            .basicMarquee(
-                                // Animate forever.
-                                iterations = Int.MAX_VALUE,
-                                spacing = MarqueeSpacing(0.dp)
-                            )
-                            .padding(start = 10.dp),
-                        text = currentSongState.song?.title.toString(),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold
-                        ),
-                        color = contentColor
-                    )
+                Text(
+                    modifier = Modifier.padding(start = 10.dp),
+                    text = currentSongState.song?.artist.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor
+                )
+            }
 
-                    Text(
-                        modifier = Modifier.padding(start = 10.dp),
-                        text = currentSongState.song?.artist.toString(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = contentColor
-                    )
-                }
-
-                IconButton(
-                    onClick = skipPrevious
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = "Play Previous",
-                        tint = contentColor
-                    )
-                }
-                IconButton(
-                    onClick = onPlayClick
-                ) {
-                    Icon(
-                        imageVector = if (currentSongState.isPlaying) {
-                            Icons.Rounded.Pause
-                        } else Icons.Rounded.PlayArrow,
-                        contentDescription = "Play Current",
-                        tint = contentColor
-                    )
-                }
-                IconButton(
-                    onClick = skipNext
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipNext,
-                        contentDescription = "Play Next",
-                        tint = contentColor
-                    )
-                }
+            IconButton(
+                onClick = skipPrevious
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.SkipPrevious,
+                    contentDescription = "Play Previous",
+                    tint = contentColor
+                )
+            }
+            IconButton(
+                onClick = onPlayClick
+            ) {
+                Icon(
+                    imageVector = if (currentSongState.isPlaying) {
+                        Icons.Rounded.Pause
+                    } else Icons.Rounded.PlayArrow,
+                    contentDescription = "Play Current",
+                    tint = contentColor
+                )
+            }
+            IconButton(
+                onClick = skipNext
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.SkipNext,
+                    contentDescription = "Play Next",
+                    tint = contentColor
+                )
             }
         }
     }

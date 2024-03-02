@@ -1,7 +1,12 @@
 package com.harmoniplay.ui.music.components.musicknob
 
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -21,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,6 +69,17 @@ fun MusicKnob(
         label = "rotation animation"
     )
 
+    var isFingerOnKnob by remember {
+        mutableStateOf(false)
+    }
+
+    val knobScale by animateFloatAsState(
+        targetValue = if(isFingerOnKnob) {
+            1f
+        } else 0.91f,
+        label = "Knob scale animation"
+    )
+
     Card(
         modifier = modifier
             .graphicsLayer {
@@ -90,16 +107,25 @@ fun MusicKnob(
                     color = MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .padding(30.dp),
+                .padding(start = 25.dp, end = 30.dp, top = 25.dp, bottom = 25.dp),
         ) {
 
             Knob(
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier
+                    .size(110.dp)
+                    .graphicsLayer {
+                        scaleX = knobScale
+                        scaleY = knobScale
+                    },
                 currentValue = volumeInPercentage,
-                onValueChange = onVolumeChange
+                onValueChange = onVolumeChange,
+                isFingerOnKnob = isFingerOnKnob,
+                onUserTouchActionChange = {
+                    isFingerOnKnob = it
+                }
             )
 
-            Spacer(modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.size(15.dp))
 
             VolumeBar(
                 modifier = Modifier

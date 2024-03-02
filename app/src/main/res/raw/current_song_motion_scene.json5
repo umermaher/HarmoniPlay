@@ -1,0 +1,88 @@
+{
+  ConstraintSets: {
+    start: {
+      artwork_image: {
+        width: 40,
+        height: 35,
+        start: ['parent', 'start', 10],
+        top: ['parent', 'top', 0],
+        bottom: ['parent', 'bottom', 0]
+      },
+      song_title: {
+        width: 'spread',
+        top: ['artwork_image', 'top', 0],
+        start: ['artwork_image', 'end', 0],
+        end: ['play_previous', 'start', 0],
+      },
+      artist_name: {
+        top: ['song_title', 'bottom', 0],
+        start: ['song_title', 'start', 10]
+      },
+      play_next: {
+        top: ['parent', 'top', 0],
+        bottom: ['parent', 'bottom', 0],
+        end: ['parent', 'end', 0]
+      },
+      play_current: {
+        top: ['parent', 'top', 0],
+        bottom: ['parent', 'bottom', 0],
+        end: ['play_next', 'end', 0]
+      },
+      play_previous: {
+        top: ['parent', 'top', 0],
+        bottom: ['parent', 'bottom', 0],
+        end: ['play_current', 'end', 0]
+      },
+      background: {
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
+        end: ['parent', 'end'],
+        start: ['parent', 'start'],
+      }
+    },
+    end: {
+      artwork_image: {
+        width: 150,
+        height: 150,
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'top', 0],
+      },
+      song_title: {
+        width: 'spread',
+        top: ['artwork_image', 'bottom', 0],
+        start: ['artwork_image', 'start', 0],
+      },
+      artist_name: {
+        top: ['song_title', 'bottom', 0],
+        start: ['song_title', 'start', 10]
+      },
+      play_next: {
+        top: ['play_current', 'top', 0],
+        end: ['play_current', 'start', 0],
+        bottom: ['play_current', 'bottom', 0],
+      },
+      play_current: {
+        top: ['artist_name', 'bottom', 0],
+        bottom: ['parent', 'start', 0],
+        end: ['parent', 'end', 0]
+      },
+      play_previous: {
+        top: ['play_current', 'top', 0],
+        start: ['play_current', 'end', 0],
+        bottom: ['play_current', 'bottom', 0]
+      },
+      background: {
+        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
+        end: ['play_current', 'end'],
+        start: ['parent', 'start'],
+      }
+    }
+  },
+  Transitions: {
+    default: {
+
+    }
+  }
+}

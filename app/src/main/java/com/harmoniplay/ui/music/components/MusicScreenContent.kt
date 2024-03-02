@@ -62,15 +62,9 @@ fun MusicScreenContent(
         }
     }
 
-    val moonScrollSpeed = 0.06f
+    val moonScrollSpeed = 0.05f
     val musicSoundIconsSpeed = 0.08f
     val windowAndShelfSpeed = 0.03f
-
-    // image should be crop little bit to show more parallax effect
-    // means image height should be known
-    // height must be assign with respect to width
-    // and the aspect ratio is 2/3 i.e. width of image will be 1.5 of height
-    val imageHeight = (LocalConfiguration.current.screenWidthDp * (2f/3f)).dp
 
     var moonOffset by remember {
         mutableFloatStateOf(0f)
@@ -78,6 +72,11 @@ fun MusicScreenContent(
     var musicSoundIconsOffset by remember {
         mutableFloatStateOf(0f)
     }
+    /**
+    // [windowAndShelfOffset] was also added to image height to decrease the height of image
+    // but changing the height can make list laggy due to slightly decrement in the size
+    // scrolling list looks laggy due to decrement
+    */
     var windowAndShelfOffset by remember {
         mutableFloatStateOf(0f)
     }
@@ -86,7 +85,6 @@ fun MusicScreenContent(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
-                Log.i("scroll delta offset", delta.toString())
                 val layoutInfo = lazyListState.layoutInfo
                 if (lazyListState.firstVisibleItemIndex == 0
                     || layoutInfo.visibleItemsInfo.lastOrNull()?.index
@@ -114,8 +112,7 @@ fun MusicScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .zIndex(1f)
-                ,
+                    .zIndex(1f),
                 volumeInPercentage = currentSongState.volume,
                 shouldShow = state.shouldShowMusicKnob,
             ) {
@@ -171,70 +168,14 @@ fun MusicScreenContent(
                             )
                         }
                     )
-                    
+
                     // Add additional content after 10 items
                     if (index == 8 && !isSystemInDarkTheme()) {
-                        Box(
-                            modifier = Modifier
-                                .clipToBounds()
-                                .fillMaxWidth()
-                                .height(imageHeight + windowAndShelfOffset.toDp())
-                                .align(Alignment.BottomCenter)
-//                                .background(
-//                                    Brush.verticalGradient(
-//                                        listOf(
-//                                            MaterialTheme.colorScheme.primary,
-//                                            MaterialTheme.colorScheme.secondary
-//                                        )
-//                                    )
-//                                )
-                        ) {
-
-                            // content will slide up so alignment should be bottom
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_parallax_scroll_effect_1),
-                                contentDescription = "Window and shelf",
-                                contentScale = ContentScale.Inside,
-                                alignment = Alignment.BottomCenter,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer {
-                                        translationY = windowAndShelfOffset
-                                    }
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_parallax_scroll_effect_4),
-                                contentDescription = "Moon",
-                                contentScale = ContentScale.Inside,
-                                alignment = Alignment.BottomCenter,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer {
-                                        translationY = moonOffset
-                                    }
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_parallax_scroll_effect_2),
-                                contentDescription = "Music Floating Icons",
-                                contentScale = ContentScale.Inside,
-                                alignment = Alignment.BottomCenter,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer {
-                                        translationY = musicSoundIconsOffset
-                                    }
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_parallax_scroll_effect_3),
-                                contentDescription = "A boy and furniture",
-                                contentScale = ContentScale.Inside,
-                                alignment = Alignment.BottomCenter,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                        ParallaxScrollEffectContent(
+                            windowAndShelfOffset = windowAndShelfOffset,
+                            moonOffset = moonOffset,
+                            musicSoundIconsOffset = musicSoundIconsOffset
+                        )
                     }
                 }
             }
