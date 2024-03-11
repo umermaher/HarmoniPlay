@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harmoniplay.R
 import com.harmoniplay.domain.music.MusicUseCase
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.user.UserManager
@@ -114,9 +115,11 @@ open class MusicViewModel @Inject constructor(
             _state.update { it.copy(
                 isLoading = false,
             ) }
-            error?.let {
+            error.let {
                 resultChannel.send(
-                    MusicResult.Message(it)
+                    MusicResult.Message(
+                        UiText.DynamicString(it)
+                    )
                 )
             }
         }.launchIn(viewModelScope)
@@ -126,17 +129,6 @@ open class MusicViewModel @Inject constructor(
         when (event) {
             is MusicEvent.OnSongClick -> playSong(id = event.id, pos = event.pos)
 
-            MusicEvent.OnPlayClick -> {
-                if(currentSongState.value.isPlaying) {
-                    musicUseCase.pause()
-                } else
-                    musicUseCase.play()
-            }
-
-            MusicEvent.SkipNext -> musicUseCase.skipToNextSong()
-
-            MusicEvent.SkipPrevious -> musicUseCase.skipToPreviousSong()
-
             is MusicEvent.OnProgressValueChanged ->
                 musicUseCase.changeProgress(event.value.toLong())
 
@@ -145,12 +137,7 @@ open class MusicViewModel @Inject constructor(
             is MusicEvent.OnSearchTextChange -> _searchText.value = event.query
 
             is MusicEvent.OnFavoriteIconClick -> viewModelScope.launch {
-                if(state.value.selectedPlayBy == PlayBy.ONLY_FAVORITE) {
-                    resultChannel.send(
-                        MusicResult.StartPlayerService(action = ServiceActions.STOP)
-                    )
-                }
-                musicUseCase.toggleFavoriteSong(event.index)
+                toggleFavorite(event.index)
             }
 
             is MusicEvent.OnPlayBySettingsChanged -> viewModelScope.launch {
@@ -164,7 +151,6 @@ open class MusicViewModel @Inject constructor(
             }
 
             MusicEvent.ClearSearchBar -> _searchText.update { "" }
-
 
             MusicEvent.HideSearchBar -> {
                 _searchText.update { "" }
@@ -220,7 +206,59 @@ open class MusicViewModel @Inject constructor(
                     )
                 )
             }
+
+            /**
+             * Current Song Events
+             * **/
+
+            CurrentSongEvent.OnPlayClick -> {
+                if(currentSongState.value.isPlaying) {
+                    musicUseCase.pause()
+                } else
+                    musicUseCase.play()
+            }
+
+            CurrentSongEvent.SkipNext -> musicUseCase.skipToNextSong()
+
+            CurrentSongEvent.SkipPrevious -> musicUseCase.skipToPreviousSong()
+
+            is CurrentSongEvent.OnColorPaletteChange -> _currentSongState.update {
+                it.copy(contentColorPalette = event.contentColorPalette)
+            }
+
+            is CurrentSongEvent.OnFavoriteIconClick -> viewModelScope.launch {
+                if(state.value.selectedPlayBy == PlayBy.ONLY_FAVORITE) {
+                    onEvent(CurrentSongEvent.ToggleSongContent)
+                }
+                toggleFavorite(event.index)
+            }
+
+            CurrentSongEvent.ToggleSongContent -> _currentSongState.update {
+                it.copy(shouldExpandCurrentSongContent = !it.shouldExpandCurrentSongContent)
+            }
+
+            CurrentSongEvent.OnShareButtonClick -> viewModelScope.launch {
+                currentSongState.value.song?.let {
+                    resultChannel.send(
+                        MusicResult.Share(uri = it.uri, title = it.title)
+                    )
+                }
+            }
         }
+    }
+
+    private suspend fun toggleFavorite(index: Int) {
+        if(state.value.selectedPlayBy == PlayBy.ONLY_FAVORITE) {
+            resultChannel.send(
+                MusicResult.StartPlayerService(action = ServiceActions.STOP)
+            )
+            resultChannel.send(
+                MusicResult.Message(
+                    UiText.StringResource(R.string.only_favorite_can_be_play, emptyList())
+                )
+            )
+        }
+        musicUseCase.toggleFavoriteSong(index)
     }
 
     private fun playSong(id: Long, pos: Int) {

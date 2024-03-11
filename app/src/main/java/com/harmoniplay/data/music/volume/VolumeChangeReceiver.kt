@@ -7,7 +7,7 @@ import android.media.AudioManager
 import android.util.Log
 
 class VolumeChangeReceiver(
-    private val onVolumeChange: () -> Unit
+    private val onVolumeChange: () -> Unit = {}
 ): BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {

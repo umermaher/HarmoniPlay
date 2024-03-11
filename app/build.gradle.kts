@@ -96,4 +96,7 @@ dependencies {
 
     //progress
     implementation("com.ehsanmsz:msz-progress-indicator:0.2.0")
+
+    //palette
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }

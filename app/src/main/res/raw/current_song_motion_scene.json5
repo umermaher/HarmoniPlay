@@ -2,56 +2,110 @@
   ConstraintSets: {
     start: {
       artwork_image: {
-        width: 40,
+        width: 45,
         height: 35,
         start: ['parent', 'start', 10],
-        top: ['parent', 'top', 0],
-        bottom: ['parent', 'bottom', 0]
+        bottom: ['parent', 'bottom', 8],
+      },
+      top_app_bar: {
+        width: 0,
+        height: 0,
+        top: ['parent', 'top'],
+        start: ['parent', 'start'],
+      },
+      artwork_image_background: {
+        width: 'spread',
+        height: 'spread',
+        top: ['artwork_image', 'top'],
+        bottom: ['artwork_image', 'bottom'],
+        end: ['artwork_image', 'end'],
+        start: ['artwork_image', 'start']
       },
       song_title: {
         width: 'spread',
-        top: ['artwork_image', 'top', 0],
-        start: ['artwork_image', 'end', 0],
-        end: ['play_previous', 'start', 0],
+        top: ['artwork_image', 'top'],
+        start: ['artwork_image', 'end'],
+        end: ['play_previous', 'start'],
+        custom: {
+          font_size: 15
+        }
       },
       artist_name: {
-        top: ['song_title', 'bottom', 0],
+        top: ['song_title', 'bottom'],
         start: ['song_title', 'start', 10]
       },
+      favorite_icon: {
+        width: 0,
+        height: 0,
+        top: ['parent', 'top'],
+        end: ['parent', 'end']
+      },
       play_next: {
-        top: ['parent', 'top', 0],
-        bottom: ['parent', 'bottom', 0],
-        end: ['parent', 'end', 0]
+        top: ['artwork_image', 'top'],
+        bottom: ['artwork_image', 'bottom'],
+        end: ['parent', 'end']
       },
       play_current: {
-        top: ['parent', 'top', 0],
-        bottom: ['parent', 'bottom', 0],
-        end: ['play_next', 'end', 0]
+        top: ['play_next', 'top'],
+        bottom: ['play_next', 'bottom'],
+        end: ['play_next', 'start']
       },
       play_previous: {
-        top: ['parent', 'top', 0],
-        bottom: ['parent', 'bottom', 0],
-        end: ['play_current', 'end', 0]
+        top: ['play_current', 'top'],
+        bottom: ['play_current', 'bottom'],
+        end: ['play_current', 'start']
       },
       background: {
-        top: ['parent', 'top'],
-        bottom: ['parent', 'bottom'],
+        width: 'spread',
+        height: 'spread',
+        top: ['artwork_image', 'top', -8],
+        bottom: ['artwork_image', 'bottom', -8],
         end: ['parent', 'end'],
         start: ['parent', 'start'],
       }
     },
     end: {
-      artwork_image: {
-        width: 150,
-        height: 150,
-        start: ['parent', 'start'],
+      top_app_bar: {
+        width: 'spread',
+        height: 64,
+        top: ['parent', 'top'],
         end: ['parent', 'end'],
-        top: ['parent', 'top', 0],
+        start: ['parent', 'start']
+      },
+      artwork_image: {
+        width: 'spread',
+        height: '37.4%',
+        start: ['parent', 'start', 24],
+        end: ['parent', 'end', 24],
+        top: ['top_app_bar', 'bottom', 16],
+      },
+      artwork_image_background: {
+        width: 'spread',
+        height: 'spread',
+        top: ['artwork_image', 'top', -50],
+        bottom: ['artwork_image', 'bottom', -50],
+        end: ['artwork_image', 'end', -50],
+        start: ['artwork_image', 'start', -50]
+      },
+      fav_icon_and_artwork_image_spacer: {
+        height: '6.8%',
+        top: ['artwork_image', 'bottom'],
+        end: ['artwork_image', 'end']
+      },
+      favorite_icon: {
+//        width: 0,
+//        height: 0,
+        top: ['fav_icon_and_artwork_image_spacer', 'bottom'],
+        end: ['artwork_image', 'end']
       },
       song_title: {
         width: 'spread',
-        top: ['artwork_image', 'bottom', 0],
-        start: ['artwork_image', 'start', 0],
+        top: ['favorite_icon', 'top'],
+        start: ['artwork_image', 'start'],
+        end: ['favorite_icon', 'start'],
+        custom: {
+          font_size: 25
+        }
       },
       artist_name: {
         top: ['song_title', 'bottom', 0],
@@ -59,30 +113,48 @@
       },
       play_next: {
         top: ['play_current', 'top', 0],
-        end: ['play_current', 'start', 0],
+        start: ['play_current', 'end', 0],
         bottom: ['play_current', 'bottom', 0],
       },
       play_current: {
-        top: ['artist_name', 'bottom', 0],
-        bottom: ['parent', 'start', 0],
+        bottom: ['parent', 'bottom', 16],
+        start: ['parent', 'start', 0],
         end: ['parent', 'end', 0]
       },
       play_previous: {
         top: ['play_current', 'top', 0],
-        start: ['play_current', 'end', 0],
+        end: ['play_current', 'start', 0],
         bottom: ['play_current', 'bottom', 0]
       },
       background: {
+        width: 'spread',
+        height: 'spread',
         top: ['parent', 'top'],
         bottom: ['parent', 'bottom'],
-        end: ['play_current', 'end'],
+        end: ['parent', 'end'],
         start: ['parent', 'start'],
       }
     }
   },
   Transitions: {
     default: {
-
+      from: 'start',
+      to: 'end',
+      pathMotionArc: 'start_horizontal',
+      KeyFrames: {
+        KeyAttributes: [
+          {
+            target: ['song_title'],
+            frames: [0, 10, 100],
+            translationY: [0, 50 , 0],
+          },
+          {
+            target: ['artist_name'],
+            frames: [0, 10, 100],
+            translationY: [0, 50 , 0],
+          }
+        ],
+      }
     }
   }
 }

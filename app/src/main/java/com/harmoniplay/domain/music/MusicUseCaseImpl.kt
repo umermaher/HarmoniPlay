@@ -86,8 +86,8 @@ class MusicUseCaseImpl(
     override val isLoading: StateFlow<Boolean>
         get() = _isLoading.asStateFlow()
 
-    private val _error = MutableSharedFlow<String?>()
-    override val error: SharedFlow<String?>
+    private val _error = MutableSharedFlow<String>()
+    override val error: SharedFlow<String>
         get() = _error.asSharedFlow()
 
     // Check if the ExoPlayer has media items
@@ -119,7 +119,9 @@ class MusicUseCaseImpl(
         when (val res = musicRepository.fetchSongs()) {
             is Resource2.Error -> {
                 Log.i("error in fetching songs", res.message.toString())
-                _error.emit(res.message)
+                res.message?.let {
+                    _error.emit(it)
+                }
             }
             is Resource2.Success -> {
                 _localSongs.update { res.data ?: emptyList() }
@@ -182,21 +184,32 @@ class MusicUseCaseImpl(
         val song = songs.value[index]
         val songObject = song.toSongObject()
         if(song.isFavorite) {
+            // if play by is fav then only favorite songs will be played
             if (playBy.value == ONLY_FAVORITE) {
                 exoPlayer.removeMediaItem(index)
                 _isPlaying.update { false }
                 _currentSong.update { null }
                 _currentSongIndex.update { null }
+            } else {
+                _currentSong.update {
+                    it?.copy(isFavorite = false)
+                }
             }
             musicRepository.deleteSong(songObject = songObject)
         } else {
+            _currentSong.update {
+                it?.copy(isFavorite = true)
+            }
             musicRepository.addSong(songObject = songObject)
         }
     }
 
     override suspend fun toggleFavoriteSong(song: SongDomain) {
-        val index = songs.value.indexOf(song)
-        toggleFavoriteSong(index)
+        songs.value.indexOf(song).also { index ->
+            if(index != -1) {
+                toggleFavoriteSong(index)
+            }
+        }
     }
 
     override suspend fun changePlayBy(value: PlayBy) {

@@ -1,10 +1,7 @@
 package com.harmoniplay.ui.music.components
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -26,25 +23,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.harmoniplay.R
 import com.harmoniplay.ui.music.CurrentSongState
 import com.harmoniplay.ui.music.MusicEvent
 import com.harmoniplay.ui.music.MusicState
+import com.harmoniplay.ui.music.components.currentsong.CurrentSongBar
+import com.harmoniplay.ui.music.components.currentsong.CurrentSongLocator
 import com.harmoniplay.ui.music.components.musicknob.MusicKnob
-import com.harmoniplay.utils.toDp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -73,10 +63,10 @@ fun MusicScreenContent(
         mutableFloatStateOf(0f)
     }
     /**
-    // [windowAndShelfOffset] was also added to image height to decrease the height of image
-    // but changing the height can make list laggy due to slightly decrement in the size
-    // scrolling list looks laggy due to decrement
-    */
+     * [windowAndShelfOffset] was also added to image height to decrease the height of image
+     * but changing the height can make list laggy due to slightly decrement in the size
+     * scrolling list looks laggy due to decrement
+     */
     var windowAndShelfOffset by remember {
         mutableFloatStateOf(0f)
     }
@@ -183,7 +173,8 @@ fun MusicScreenContent(
             CurrentSongLocator(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .offset(x = (-10).dp, y = (-20).dp),
+                    .offset(x = (-10).dp, y = (-60).dp)
+                ,
                 visible = isScrolling && currentSongState.song != null
             ) {
                 onEvent(
@@ -192,17 +183,21 @@ fun MusicScreenContent(
             }
         }
 
-        CurrentSongBar(
-            currentSongState = currentSongState,
-            skipPrevious = {
-                onEvent(MusicEvent.SkipPrevious)
-            },
-            onPlayClick = {
-                onEvent(MusicEvent.OnPlayClick)
-            },
-            skipNext = {
-                onEvent(MusicEvent.SkipNext)
-            }
-        )
+//        CurrentSongBar(
+//            currentSongState = currentSongState,
+//            skipPrevious = {
+//                onEvent(MusicEvent.SkipPrevious)
+//            },
+//            onPlayClick = {
+//                onEvent(MusicEvent.OnPlayClick)
+//            },
+//            skipNext = {
+//                onEvent(MusicEvent.SkipNext)
+//            }
+//        )
+//
+//        if(currentSongState.song != null) {
+//            Spacer(modifier = Modifier.size(60.dp))
+//        }
     }
 }

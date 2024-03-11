@@ -10,7 +10,7 @@ interface MusicUseCase {
     val isPlaying: StateFlow<Boolean>
     val isLoading: StateFlow<Boolean>
     val playBy: StateFlow<PlayBy>
-    val error: SharedFlow<String?>
+    val error: SharedFlow<String>
     suspend fun getAllSongs()
 //    suspend fun getAllFavSongsIds(): Flow<List<Long>>
     fun selectSong(index: Int)

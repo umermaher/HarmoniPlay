@@ -1,5 +1,6 @@
 package com.harmoniplay.ui.music
 
+import android.net.Uri
 import androidx.compose.runtime.Immutable
 import com.harmoniplay.R
 import com.harmoniplay.domain.music.PlayBy
@@ -36,36 +37,46 @@ data class CurrentSongState(
     val currentSongIndex: Int ?= null,
     val song: Song?= null,
     val currentSongProgress: Float = 0f,
-    val volume: Float = 0f
+    val contentColorPalette: Map<String,String> = mapOf(),
+    val volume: Float = 0f,
+    val shouldExpandCurrentSongContent: Boolean = false
 )
 
 sealed class MusicResult {
-    data class Message(val msg: String): MusicResult()
+    data class Message(val msg: UiText): MusicResult()
     data class ScrollToPosition(val pos: Int): MusicResult()
     data class StartPlayerService(val action: ServiceActions, val shouldExitFromApplication: Boolean = false): MusicResult()
+    data class Share(val uri: Uri, val title: String): MusicResult()
 }
 
-sealed interface MusicEvent {
-    data class OnPermissionResult(val permission: String, val isGranted: Boolean): MusicEvent
-    data object DismissPermissionDialog: MusicEvent
-    data object OnExitButtonClick: MusicEvent
-    data class OnSearchTextChange(val query: String): MusicEvent
-    data object ShowSearchBar: MusicEvent
-    data object HideSearchBar: MusicEvent
-    data object ClearSearchBar: MusicEvent
-    data object ToggleMusicSettingsSheet: MusicEvent
-    data object ToggleMusicKnob: MusicEvent
-    data class OnVolumeChange(val volume: Float): MusicEvent
-    data class OnSongClick(val id: Long, val pos: Int): MusicEvent
-    data class OnFavoriteIconClick(val index: Int): MusicEvent
-    data class OnProgressValueChanged(val value: Float): MusicEvent
-    class OnPlayBySettingsChanged(val playBy: PlayBy) : MusicEvent
-    data object OnScrollToCurrentSongClick: MusicEvent
-    data object OnPlayClick: MusicEvent
-    data object SkipNext: MusicEvent
-    data object SkipPrevious: MusicEvent
-    data object OnQuitButtonClick: MusicEvent
-    data object OnCancelToQuitClick: MusicEvent
+sealed class MusicEvent {
+    data class OnPermissionResult(val permission: String, val isGranted: Boolean): MusicEvent()
+    data object DismissPermissionDialog: MusicEvent()
+    data object OnExitButtonClick: MusicEvent()
+    data class OnSearchTextChange(val query: String): MusicEvent()
+    data object ShowSearchBar: MusicEvent()
+    data object HideSearchBar: MusicEvent()
+    data object ClearSearchBar: MusicEvent()
+    data object ToggleMusicSettingsSheet: MusicEvent()
+    data object ToggleMusicKnob: MusicEvent()
+    data class OnVolumeChange(val volume: Float): MusicEvent()
+    data class OnSongClick(val id: Long, val pos: Int): MusicEvent()
+    data class OnFavoriteIconClick(val index: Int): MusicEvent()
+    data class OnProgressValueChanged(val value: Float): MusicEvent()
+    class OnPlayBySettingsChanged(val playBy: PlayBy) : MusicEvent()
+    data object OnScrollToCurrentSongClick: MusicEvent()
+    data object OnQuitButtonClick: MusicEvent()
+    data object OnCancelToQuitClick: MusicEvent()
+}
+
+sealed class CurrentSongEvent: MusicEvent() {
+    data class OnColorPaletteChange(val contentColorPalette: Map<String,String>): CurrentSongEvent()
+    data object OnPlayClick: CurrentSongEvent()
+    data object SkipNext: CurrentSongEvent()
+    data object SkipPrevious: CurrentSongEvent()
+    data object ToggleSongContent: CurrentSongEvent()
+    data class OnFavoriteIconClick(val index: Int): CurrentSongEvent()
+    data object OnShareButtonClick: CurrentSongEvent()
 }
 
 data class PlayByOption(

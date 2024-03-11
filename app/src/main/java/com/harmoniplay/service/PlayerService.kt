@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.IBinder
 import android.widget.ImageView
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -43,13 +44,12 @@ class PlayerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
-            ServiceActions.START.toString() -> {
-                if(!isStartedAlready)
-                    start()
+            ServiceActions.START.toString() -> if(!isStartedAlready) {
+                start()
             }
             ServiceActions.STOP.toString() -> stop()
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_NOT_STICKY
     }
 
     private fun start() {

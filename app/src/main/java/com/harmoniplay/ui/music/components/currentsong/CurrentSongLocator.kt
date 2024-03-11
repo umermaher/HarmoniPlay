@@ -1,4 +1,4 @@
-package com.harmoniplay.ui.music.components
+package com.harmoniplay.ui.music.components.currentsong
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility

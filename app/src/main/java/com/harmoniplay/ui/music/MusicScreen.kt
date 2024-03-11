@@ -2,32 +2,28 @@ package com.harmoniplay.ui.music
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -36,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.harmoniplay.R
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.ui.MainActivity
-import com.harmoniplay.ui.music.components.CurrentSongLocator
 import com.harmoniplay.ui.music.components.MusicScreenContent
 import com.harmoniplay.ui.music.components.MusicTopBar
+import com.harmoniplay.ui.music.components.currentsong.CurrentSongContent
 import com.harmoniplay.utils.composables.ConfirmDialog
 import com.harmoniplay.utils.composables.GeneralBottomSheet
 import com.harmoniplay.utils.composables.MusicPermissionTextProvider
@@ -48,14 +44,15 @@ import com.harmoniplay.utils.composables.OnBoardMessage
 import com.harmoniplay.utils.composables.OptionSheetCard
 import com.harmoniplay.utils.composables.PermissionDialog
 import com.harmoniplay.utils.composables.ProgressIndicator
+import com.harmoniplay.utils.composables.UiText
 import com.harmoniplay.utils.hasPermissions
 import com.harmoniplay.utils.openAppSettings
 import com.harmoniplay.utils.showToast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicScreen(
@@ -116,7 +113,15 @@ fun MusicScreen(
 
     ObserveAsEvents(flow = result) { res ->
         when (res) {
-            is MusicResult.Message -> activity.showToast(res.msg)
+            is MusicResult.Message -> activity.showToast(
+                when (res.msg) {
+                    is UiText.DynamicString -> res.msg.value
+                    is UiText.StringResource -> activity.getString(
+                        res.msg.value
+                    )
+                }
+            )
+
             is MusicResult.ScrollToPosition -> {
                 scope.launch {
                     lazyListState.animateScrollToItem(index = res.pos)
@@ -126,7 +131,21 @@ fun MusicScreen(
             is MusicResult.StartPlayerService -> {
                 activity.startPlayerService(res.action)
                 if (res.shouldExitFromApplication) {
-                    activity.finish()
+                    activity.finishAndRemoveTask()
+                }
+            }
+
+            is MusicResult.Share -> scope.launch {
+                // Create an intent to send the audio
+                val sendIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_STREAM, res.uri)
+                    type = "audio/*" // Set the MIME type to audio/*
+                }
+                Log.i("MusicResult.Share", "Sharing Audio")
+                val chooser = Intent.createChooser(sendIntent, "Share Song")
+                if (sendIntent.resolveActivity(activity.packageManager) != null) {
+                    activity.startActivity(chooser)
                 }
             }
         }
@@ -134,55 +153,70 @@ fun MusicScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    Scaffold(
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            MusicTopBar(
-                state = state,
-                searchBarText = searchBarText,
-                onEvent = onEvent,
-                scrollBehavior = scrollBehavior
-            )
-        },
-    ) { values ->
-        when {
-            state.songs.isEmpty() && !state.isLoading -> {
-                val modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-                when (state.selectedPlayBy) {
-                    PlayBy.ONLY_FAVORITE -> OnBoardMessage(
-                        modifier = modifier,
-                        imgRes = R.drawable.img_onboard_music,
-                        titleRes = R.string.no_fav_songs_msg,
-                        msgRes = R.string.add_fav_songs_msg
-                    )
+            .fillMaxSize(),
+    ) {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                MusicTopBar(
+                    state = state,
+                    searchBarText = searchBarText,
+                    onEvent = onEvent,
+                    scrollBehavior = scrollBehavior
+                )
+            },
+        ) { values ->
+            when {
+                state.songs.isEmpty() && !state.isLoading -> {
+                    val modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                    when (state.selectedPlayBy) {
+                        PlayBy.ONLY_FAVORITE -> OnBoardMessage(
+                            modifier = modifier,
+                            imgRes = R.drawable.img_onboard_music,
+                            titleRes = R.string.no_fav_songs_msg,
+                            msgRes = R.string.add_fav_songs_msg
+                        )
 
-                    PlayBy.ALL -> OnBoardMessage(
-                        modifier = modifier,
-                        imgRes = R.drawable.img_onboard_music,
-                        titleRes = R.string.no_songs_msg,
-                        msgRes = R.string.empty_string
+                        PlayBy.ALL -> OnBoardMessage(
+                            modifier = modifier,
+                            imgRes = R.drawable.img_onboard_music,
+                            titleRes = R.string.no_songs_msg,
+                            msgRes = R.string.empty_string
+                        )
+                    }
+                }
+
+                state.isLoading -> ProgressIndicator()
+
+                else -> {
+                    MusicScreenContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(values),
+                        state = state,
+                        currentSongState = currentSongState,
+                        lazyListState = lazyListState,
+                        onEvent = onEvent
                     )
                 }
             }
-
-            state.isLoading -> ProgressIndicator()
-
-            else -> {
-                MusicScreenContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(values),
-                    state = state,
-                    currentSongState = currentSongState,
-                    lazyListState = lazyListState,
-                    onEvent = onEvent
-                )
-            }
         }
+
+        if(currentSongState.song != null) {
+            CurrentSongContent(
+                modifier = Modifier
+                    .fillMaxSize(),
+                currentSongState = currentSongState,
+                onEvent = onEvent,
+            )
+        }
+
     }
 
     if (state.shouldShowMusicSettingsSheet) {
