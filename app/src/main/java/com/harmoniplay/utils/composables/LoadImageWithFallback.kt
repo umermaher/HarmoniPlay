@@ -19,6 +19,8 @@ import com.harmoniplay.R
 fun LoadImageWithFallback(
     modifier: Modifier = Modifier,
     uri: Uri?,
+    onSuccess: () -> Unit =  {},
+    onError: () -> Unit =  {},
 ) {
     var isError by remember {
         mutableStateOf(true)
@@ -36,9 +38,11 @@ fun LoadImageWithFallback(
             onError = {
                 isError = true
                 Log.e("Image Error",it.result.throwable.message.toString())
+                onError()
             },
             onSuccess = {
                 isError = false
+                onSuccess()
             },
         )
     }

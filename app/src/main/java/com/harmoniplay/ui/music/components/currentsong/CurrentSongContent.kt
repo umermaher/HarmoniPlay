@@ -1,32 +1,25 @@
 package com.harmoniplay.ui.music.components.currentsong
 
-import android.app.Activity
 import android.graphics.Color.parseColor
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -36,14 +29,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -56,6 +47,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
@@ -63,7 +55,6 @@ import com.harmoniplay.R
 import com.harmoniplay.ui.MainActivity
 import com.harmoniplay.ui.music.CurrentSongEvent
 import com.harmoniplay.ui.music.CurrentSongState
-import com.harmoniplay.ui.music.MusicEvent
 import com.harmoniplay.utils.PaletteGenerator
 import com.harmoniplay.utils.composables.LoadImageWithFallback
 
@@ -86,20 +77,31 @@ fun CurrentSongContent(
     }
 
     val backgroundColor = MaterialTheme.colorScheme.primary
+    val contentColorFromTheme = MaterialTheme.colorScheme.onPrimary
     val palette = currentSongState.contentColorPalette
 
     val expandCurrentSongContent = currentSongState.shouldExpandCurrentSongContent
 
     val songContentProgress by animateFloatAsState(
         targetValue = if (expandCurrentSongContent) 1f else 0f,
-        animationSpec = tween(durationMillis = 2300),
+//        animationSpec = tween(durationMillis = 2300),
         label = "Current Song Progress"
     )
 
-    val contentColor = if (expandCurrentSongContent && palette.isNotEmpty()) {
-        Color(parseColor(palette["vibrant"]!!))
-    } else MaterialTheme.colorScheme.onPrimary
+    val contentColor = remember(palette, expandCurrentSongContent) {
+        if (expandCurrentSongContent && palette.isNotEmpty()) {
+            Color(parseColor(palette["vibrant"]!!))
+        } else contentColorFromTheme
+    }
+
 //    val contentColor by animateColorAsState(
+//        targetValue = if (expandCurrentSongContent && palette.isNotEmpty()) {
+//            Color(parseColor(palette["vibrant"]!!))
+//        } else MaterialTheme.colorScheme.onPrimary,
+//        label = "contentColor"
+//    )
+
+//    val vibrant by animateColorAsState(
 //        targetValue = if(shouldExpandCurrentSongContent && palette.isNotEmpty()) {
 //            Color(parseColor(palette["vibrant"]!!))
 //        } else MaterialTheme.colorScheme.onPrimary,
@@ -135,7 +137,8 @@ fun CurrentSongContent(
 //        } else backgroundColor,
 //        label = "lightMutedColor"
 //    )
-    val darkMutedSwatch by animateColorAsState(
+
+    val animatedBackgroundColor by animateColorAsState(
         targetValue = if (expandCurrentSongContent && palette.isNotEmpty()) {
             Color(parseColor(palette["darkMuted"]!!))
         } else MaterialTheme.colorScheme.primary,
@@ -182,13 +185,14 @@ fun CurrentSongContent(
     ) {
 
         val songTitleProperties = motionProperties(id = SONG_TITLE)
+        val songArtistNameProperties = motionProperties(id = ARTIST_NAME)
 
         /**
          * Background
          * **/
         Box(
             modifier = Modifier
-                .background(color = darkMutedSwatch)
+                .background(color = animatedBackgroundColor)
                 .fillMaxWidth()
                 .layoutId(BACKGROUND)
                 .clickable {
@@ -304,15 +308,11 @@ fun CurrentSongContent(
                 }
                 .basicMarquee(
                     // Animate forever.
-//                    iterations = Int.MAX_VALUE,
-//                    spacing = MarqueeSpacing(0.dp)
+                    iterations = Int.MAX_VALUE,
                 )
                 .padding(start = 10.dp)
                 .layoutId(SONG_TITLE),
             text = currentSongState.song?.title.toString(),
-//            style = MaterialTheme.typography.labelLarge.copy(
-//                fontWeight = FontWeight.ExtraBold
-//            ),
             color = contentColor,
             fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
             fontWeight = FontWeight.ExtraBold,
@@ -326,8 +326,12 @@ fun CurrentSongContent(
             modifier = Modifier
                 .layoutId(ARTIST_NAME),
             text = currentSongState.song?.artist.toString(),
+            color = contentColor,
+//            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+//            fontWeight = FontWeight.Bold,
+//            fontSize = 12.sp,
             style = MaterialTheme.typography.labelMedium,
-            color = contentColor
+//         songArtistNameProperties.value.fontSize("font_size")
         )
 
         IconButton(

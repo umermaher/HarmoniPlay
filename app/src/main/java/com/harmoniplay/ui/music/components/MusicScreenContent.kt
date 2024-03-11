@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.harmoniplay.ui.music.CurrentSongEvent
 import com.harmoniplay.ui.music.CurrentSongState
 import com.harmoniplay.ui.music.MusicEvent
 import com.harmoniplay.ui.music.MusicState
@@ -173,8 +174,12 @@ fun MusicScreenContent(
             CurrentSongLocator(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .offset(x = (-10).dp, y = (-60).dp)
-                ,
+                    .offset(
+                        x = (-10).dp,
+                        y = ( if(currentSongState.song != null) {
+                            -10
+                        } else -60 ).dp
+                    ),
                 visible = isScrolling && currentSongState.song != null
             ) {
                 onEvent(
@@ -186,18 +191,18 @@ fun MusicScreenContent(
 //        CurrentSongBar(
 //            currentSongState = currentSongState,
 //            skipPrevious = {
-//                onEvent(MusicEvent.SkipPrevious)
+//                onEvent(CurrentSongEvent.SkipPrevious)
 //            },
 //            onPlayClick = {
-//                onEvent(MusicEvent.OnPlayClick)
+//                onEvent(CurrentSongEvent.OnPlayClick)
 //            },
 //            skipNext = {
-//                onEvent(MusicEvent.SkipNext)
+//                onEvent(CurrentSongEvent.SkipNext)
 //            }
 //        )
-//
-//        if(currentSongState.song != null) {
-//            Spacer(modifier = Modifier.size(60.dp))
-//        }
+
+        if(currentSongState.song != null) {
+            Spacer(modifier = Modifier.size(50.dp))
+        }
     }
 }
