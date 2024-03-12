@@ -354,14 +354,16 @@ fun CurrentSongContent(
             modifier = Modifier
                 .layoutId(PLAY_CURRENT)
         ) {
-            Icon(
-                imageVector = if (currentSongState.isPlaying) {
-                    Icons.Rounded.Pause
-                } else Icons.Rounded.PlayArrow,
-                contentDescription = "Play Current",
-                tint = contentColor
-            )
         }
+        Icon(
+            modifier = Modifier
+                .layoutId(PLAY_CURRENT_ICON),
+            imageVector = if (currentSongState.isPlaying) {
+                Icons.Rounded.Pause
+            } else Icons.Rounded.PlayArrow,
+            contentDescription = "Play Current",
+            tint = contentColor
+        )
         IconButton(
             onClick = {
                 onEvent(CurrentSongEvent.SkipNext)
@@ -387,5 +389,6 @@ private const val SONG_TITLE = "song_title"
 private const val ARTIST_NAME = "artist_name"
 private const val PLAY_NEXT = "play_next"
 private const val PLAY_CURRENT = "play_current"
+private const val PLAY_CURRENT_ICON = "play_current_icon"
 private const val PLAY_PREVIOUS = "play_previous"
 private const val FAVORITE_ICON = "favorite_icon"

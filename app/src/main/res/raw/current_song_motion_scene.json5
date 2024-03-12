@@ -49,9 +49,19 @@
         end: ['parent', 'end']
       },
       play_current: {
+        width: 40,
+        height: 40,
         top: ['play_next', 'top'],
         bottom: ['play_next', 'bottom'],
         end: ['play_next', 'start']
+      },
+      play_current_icon: {
+        width: 24,
+        height: 24,
+        bottom: ['play_current', 'bottom'],
+        start: ['play_current', 'start'],
+        end: ['play_current', 'end'],
+        top: ['play_current', 'top']
       },
       play_previous: {
         top: ['play_current', 'top'],
@@ -125,9 +135,19 @@
         bottom: ['play_current', 'bottom', 0],
       },
       play_current: {
-        bottom: ['parent', 'bottom', 16],
+        width: 66,
+        height: 66,
+        bottom: ['parent', 'bottom', 24],
         start: ['parent', 'start', 0],
         end: ['parent', 'end', 0]
+      },
+      play_current_icon: {
+        width: 40,
+        height: 40,
+        bottom: ['play_current', 'bottom'],
+        start: ['play_current', 'start'],
+        end: ['play_current', 'end'],
+        top: ['play_current', 'top']
       },
       play_previous: {
         top: ['play_current', 'top', 0],
