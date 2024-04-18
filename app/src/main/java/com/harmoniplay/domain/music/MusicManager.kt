@@ -3,7 +3,7 @@ package com.harmoniplay.domain.music
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-interface MusicUseCase {
+interface MusicManager {
     val songs: StateFlow<List<Song>>
     val currentSongIndex: StateFlow<Int?>
     val currentSong: StateFlow<Song?>

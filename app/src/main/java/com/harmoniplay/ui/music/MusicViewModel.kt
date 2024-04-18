@@ -2,21 +2,15 @@ package com.harmoniplay.ui.music
 
 import android.Manifest
 import android.os.Build
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.harmoniplay.R
-import com.harmoniplay.domain.music.MusicUseCase
+import com.harmoniplay.domain.music.MusicManager
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.volume.StreamVolumeManager
 import com.harmoniplay.service.ServiceActions
-import com.harmoniplay.ui.login.LoginResult
-import com.harmoniplay.utils.Screen
 import com.harmoniplay.utils.composables.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -28,7 +22,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,8 +30,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-open class MusicViewModel @Inject constructor(
-    private val musicUseCase: MusicUseCase,
+class MusicViewModel @Inject constructor(
+    private val musicUseCase: MusicManager,
     private val userManager: UserManager,
     private val musicStreamVolumeManager: StreamVolumeManager
 ): ViewModel() {
@@ -129,8 +122,7 @@ open class MusicViewModel @Inject constructor(
         when (event) {
             is MusicEvent.OnSongClick -> playSong(id = event.id, pos = event.pos)
 
-            is MusicEvent.OnProgressValueChanged ->
-                musicUseCase.changeProgress(event.value.toLong())
+            is MusicEvent.OnProgressValueChanged -> musicUseCase.changeProgress(event.value.toLong())
 
             MusicEvent.OnScrollToCurrentSongClick -> scrollToCurrentSong()
 
@@ -166,7 +158,7 @@ open class MusicViewModel @Inject constructor(
                 }
             }
 
-            is MusicEvent.OnVolumeChange -> musicStreamVolumeManager.changeMusicVolumeByPercentage(event.volume)
+            is MusicEvent.OnVolumeChange -> musicStreamVolumeManager.changeMusicVolume(event.volume)
 
             MusicEvent.DismissPermissionDialog -> permissionDialogQueue.removeFirst()
 
@@ -244,6 +236,8 @@ open class MusicViewModel @Inject constructor(
                     )
                 }
             }
+
+            is CurrentSongEvent.OnProgressValueChanged -> musicUseCase.changeProgress(event.value.toLong())
         }
     }
 

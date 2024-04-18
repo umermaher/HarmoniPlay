@@ -1,5 +1,6 @@
-package com.harmoniplay.data.music
+package com.harmoniplay.data.music.repository
 
+import com.harmoniplay.data.music.LocalSong
 import com.harmoniplay.data.music.db.model.SongObject
 import com.harmoniplay.utils.Resource2
 import kotlinx.coroutines.flow.Flow

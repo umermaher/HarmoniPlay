@@ -10,7 +10,7 @@
       top_app_bar: {
         width: 0,
         height: 0,
-        top: ['parent', 'top'],
+        bottom: ['parent', 'bottom'],
         start: ['parent', 'start'],
       },
       artwork_image_background: {
@@ -38,6 +38,12 @@
         }
       },
       favorite_icon: {
+        width: 0,
+        height: 0,
+        top: ['parent', 'top'],
+        end: ['parent', 'end']
+      },
+      music_seekbar: {
         width: 0,
         height: 0,
         top: ['parent', 'top'],
@@ -106,8 +112,8 @@
         end: ['artwork_image', 'end']
       },
       favorite_icon: {
-//        width: 0,
-//        height: 0,
+        width: 30,
+        height: 30,
         top: ['fav_icon_and_artwork_image_spacer', 'bottom'],
         end: ['artwork_image', 'end']
       },
@@ -116,18 +122,27 @@
         height: 32,
         top: ['favorite_icon', 'top'],
         start: ['artwork_image', 'start'],
-        end: ['favorite_icon', 'start'],
+        end: ['favorite_icon', 'start', 16],
         custom: {
           font_size: 25
         }
       },
       artist_name: {
         height: 19,
+        width: 'spread',
         top: ['song_title', 'bottom'],
         start: ['song_title', 'start', 10],
+        end: ['song_title', 'end'],
         custom: {
           font_size: 15
         }
+      },
+      music_seekbar: {
+        width: 'spread',
+        height: 'spread',
+        bottom: ['play_current', 'top', 24],
+        start: ['artwork_image', 'start'],
+        end: ['artwork_image', 'end']
       },
       play_next: {
         top: ['play_current', 'top', 0],
@@ -135,15 +150,15 @@
         bottom: ['play_current', 'bottom', 0],
       },
       play_current: {
-        width: 66,
-        height: 66,
+        width: 75,
+        height: 75,
         bottom: ['parent', 'bottom', 24],
         start: ['parent', 'start', 0],
         end: ['parent', 'end', 0]
       },
       play_current_icon: {
-        width: 40,
-        height: 40,
+        width: 55,
+        height: 55,
         bottom: ['play_current', 'bottom'],
         start: ['play_current', 'start'],
         end: ['play_current', 'end'],

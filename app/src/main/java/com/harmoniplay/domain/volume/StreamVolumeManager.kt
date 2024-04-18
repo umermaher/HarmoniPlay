@@ -4,6 +4,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface StreamVolumeManager {
     val volume: StateFlow<Float>
-    fun changeMusicVolumeByPercentage(percentage: Float)
+    fun changeMusicVolume(percentage: Float)
     fun unRegisterVolumeChangeListener()
 }

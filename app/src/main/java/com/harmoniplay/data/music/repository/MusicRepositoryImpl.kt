@@ -1,4 +1,4 @@
-package com.harmoniplay.data.music
+package com.harmoniplay.data.music.repository
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -10,6 +10,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import com.harmoniplay.R
+import com.harmoniplay.data.music.LocalSong
 import com.harmoniplay.data.music.db.model.SongObject
 import com.harmoniplay.utils.ALBUM_ARTWORK_CONTENT_URI
 import com.harmoniplay.utils.Resource2

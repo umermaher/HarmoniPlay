@@ -5,12 +5,12 @@ import android.database.Cursor
 import android.os.Build
 import android.provider.MediaStore
 import androidx.media3.exoplayer.ExoPlayer
-import com.harmoniplay.data.music.MusicRepository
-import com.harmoniplay.data.music.MusicRepositoryImpl
+import com.harmoniplay.data.music.repository.MusicRepository
+import com.harmoniplay.data.music.repository.MusicRepositoryImpl
 import com.harmoniplay.data.music.volume.AndroidMusicStreamVolumeManager
 import com.harmoniplay.domain.user.UserManager
-import com.harmoniplay.domain.music.MusicUseCase
-import com.harmoniplay.domain.music.MusicUseCaseImpl
+import com.harmoniplay.domain.music.MusicManager
+import com.harmoniplay.data.music.AndroidMusicManager
 import com.harmoniplay.domain.volume.StreamVolumeManager
 import dagger.Module
 import dagger.Provides
@@ -38,7 +38,7 @@ object ViewModelScopedModule {
         musicRepository: MusicRepository,
         settingsRepository: UserManager,
         exoPlayer: ExoPlayer
-    ): MusicUseCase = MusicUseCaseImpl(
+    ): MusicManager = AndroidMusicManager(
         musicRepository = musicRepository,
         userManager = settingsRepository,
         exoPlayer = exoPlayer

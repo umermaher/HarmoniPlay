@@ -2,17 +2,22 @@ package com.harmoniplay.ui.music.components.currentsong
 
 import android.graphics.Color.parseColor
 import android.util.Log
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+//import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -27,6 +32,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -34,7 +42,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -55,6 +65,7 @@ import com.harmoniplay.R
 import com.harmoniplay.ui.MainActivity
 import com.harmoniplay.ui.music.CurrentSongEvent
 import com.harmoniplay.ui.music.CurrentSongState
+import com.harmoniplay.ui.music.MusicEvent
 import com.harmoniplay.utils.PaletteGenerator
 import com.harmoniplay.utils.composables.LoadImageWithFallback
 
@@ -93,6 +104,12 @@ fun CurrentSongContent(
             Color(parseColor(palette["vibrant"]!!))
         } else contentColorFromTheme
     }
+
+    var favIconExpanded by remember { mutableStateOf(false) }
+    // Animate the size change
+    val favIconSize by animateDpAsState(
+        targetValue = if (favIconExpanded) 40.dp else 24.dp, label = "",
+    )
 
 //    val contentColor by animateColorAsState(
 //        targetValue = if (expandCurrentSongContent && palette.isNotEmpty()) {
@@ -196,7 +213,8 @@ fun CurrentSongContent(
                 .fillMaxWidth()
                 .layoutId(BACKGROUND)
                 .clickable {
-                    onEvent(CurrentSongEvent.ToggleSongContent)
+                    if (!expandCurrentSongContent)
+                        onEvent(CurrentSongEvent.ToggleSongContent)
                 }
         )
 
@@ -272,17 +290,23 @@ fun CurrentSongContent(
         /**
          * Favorite Icon
          * **/
-        IconButton(
-            modifier = Modifier
-                .layoutId(FAVORITE_ICON),
-            onClick = {
-                currentSongState.currentSongIndex?.let {
-                    onEvent(CurrentSongEvent.OnFavoriteIconClick(it))
-                }
-            }
-        ) {
+        Crossfade(
+            targetState = currentSongState.song?.isFavorite,
+            label = "Fav Icon Animation"
+        ) { isFavorite ->
             Icon(
-                imageVector = if (currentSongState.song?.isFavorite == true) {
+                modifier = Modifier
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        favIconExpanded = !favIconExpanded
+                        currentSongState.currentSongIndex?.let {
+                            onEvent(CurrentSongEvent.OnFavoriteIconClick(it))
+                        }
+                    }
+                    .layoutId(FAVORITE_ICON),
+                imageVector = if (isFavorite == true) {
                     Icons.Default.Favorite
                 } else Icons.Default.FavoriteBorder,
                 contentDescription = "Favorite button",
@@ -327,12 +351,29 @@ fun CurrentSongContent(
                 .layoutId(ARTIST_NAME),
             text = currentSongState.song?.artist.toString(),
             color = contentColor,
-//            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-//            fontWeight = FontWeight.Bold,
-//            fontSize = 12.sp,
             style = MaterialTheme.typography.labelMedium,
-//         songArtistNameProperties.value.fontSize("font_size")
         )
+
+        /**
+         * Slider
+         * */
+        currentSongState.song?.let { song ->
+            Slider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .layoutId(MUSIC_SEEKBAR),
+                value = currentSongState.currentSongProgress,
+                onValueChange = {
+                    onEvent(CurrentSongEvent.OnProgressValueChanged(it))
+                },
+                valueRange = 0f..song.duration.toFloat(),
+                colors = SliderDefaults.colors(
+                    thumbColor = contentColor,
+                    activeTrackColor = contentColor,
+                    inactiveTrackColor = contentColor.copy(alpha = 0.4f)
+                )
+            )
+        }
 
         IconButton(
             onClick = {
@@ -347,14 +388,15 @@ fun CurrentSongContent(
                 tint = contentColor
             )
         }
+
         IconButton(
             onClick = {
                 onEvent(CurrentSongEvent.OnPlayClick)
             },
             modifier = Modifier
                 .layoutId(PLAY_CURRENT)
-        ) {
-        }
+        ) {}
+
         Icon(
             modifier = Modifier
                 .layoutId(PLAY_CURRENT_ICON),
@@ -364,6 +406,7 @@ fun CurrentSongContent(
             contentDescription = "Play Current",
             tint = contentColor
         )
+
         IconButton(
             onClick = {
                 onEvent(CurrentSongEvent.SkipNext)
@@ -387,6 +430,7 @@ private const val ARTWORK_IMAGE_BACKGROUND = "artwork_image_background"
 private const val FAV_ICON_AND_ARTWORK_IMAGE_SPACER = "fav_icon_and_artwork_image_spacer"
 private const val SONG_TITLE = "song_title"
 private const val ARTIST_NAME = "artist_name"
+private const val MUSIC_SEEKBAR = "music_seekbar"
 private const val PLAY_NEXT = "play_next"
 private const val PLAY_CURRENT = "play_current"
 private const val PLAY_CURRENT_ICON = "play_current_icon"

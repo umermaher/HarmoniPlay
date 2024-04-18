@@ -2,11 +2,7 @@ package com.harmoniplay.data.music.volume
 
 import android.content.Context
 import android.content.IntentFilter
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.os.Build
-import android.util.Log
 import com.harmoniplay.domain.volume.StreamVolumeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +12,6 @@ import kotlinx.coroutines.flow.update
 class AndroidMusicStreamVolumeManager(
     private val context: Context
 ): StreamVolumeManager {
-
 
     private val audioManager by lazy {
         context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -39,11 +34,11 @@ class AndroidMusicStreamVolumeManager(
         )
     }
 
-    override fun changeMusicVolumeByPercentage(percentage: Float) {
-        // Ensure percentage is within the valid range (0.0 to 1.0)
+    override fun changeMusicVolume(percentage: Float) {
+        // Ensure percentage is within the valid range (0.0 to 1.0) so desired volume can be achieved
         val adjustedPercentage = percentage.coerceIn(0.0f, 1.0f)
 
-        // Get the maximum volume level
+        // Get the maximum volume level to calculate desired volume
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 
         // Calculate the volume level based on the percentage
@@ -55,7 +50,6 @@ class AndroidMusicStreamVolumeManager(
 
     private fun getCurrentMusicVolumeInPercentage(): Float {
         val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        // Get the maximum volume level
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         return (currentVolume / maxVolume.toFloat())
     }

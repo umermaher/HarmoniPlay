@@ -1,15 +1,19 @@
-package com.harmoniplay.domain.music
+package com.harmoniplay.data.music
 
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.harmoniplay.data.music.LocalSong
-import com.harmoniplay.data.music.MusicRepository
-import com.harmoniplay.data.music.db.model.SongObject
+import com.harmoniplay.data.music.repository.MusicRepository
+import com.harmoniplay.domain.music.MusicManager
+import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.music.PlayBy.*
+import com.harmoniplay.domain.music.Song
+import com.harmoniplay.domain.music.SongDomain
+import com.harmoniplay.domain.music.toSongDomain
+import com.harmoniplay.domain.music.toSongObject
 import com.harmoniplay.utils.Resource2
 import com.harmoniplay.utils.TIME_UPDATED_INTERVAL
 import kotlinx.coroutines.CoroutineScope
@@ -27,11 +31,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class MusicUseCaseImpl(
+class AndroidMusicManager(
     private val musicRepository: MusicRepository,
     private val userManager: UserManager,
     private val exoPlayer: ExoPlayer,
-): MusicUseCase {
+): MusicManager {
 
     private val _localSongs = MutableStateFlow<List<LocalSong>>(emptyList())
 
@@ -91,7 +95,7 @@ class MusicUseCaseImpl(
         get() = _error.asSharedFlow()
 
     // Check if the ExoPlayer has media items
-    private fun hasMediaItems(): Boolean = exoPlayer.currentMediaItem != null
+    private fun hasCurrentMediaItems(): Boolean = exoPlayer.currentMediaItem != null
 //    private val hasMediaItems: Boolean = exoPlayer.playbackState != Player.STATE_IDLE &&
 //            !exoPlayer.currentTimeline.isEmpty
 
@@ -125,7 +129,7 @@ class MusicUseCaseImpl(
             }
             is Resource2.Success -> {
                 _localSongs.update { res.data ?: emptyList() }
-                while(res.data?.isNotEmpty() == true && hasMediaItems()) {
+                while(res.data?.isNotEmpty() == true && hasCurrentMediaItems()) {
                     if(songs.value.isNotEmpty()) {
                         resumeState()
                         break

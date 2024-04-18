@@ -77,6 +77,7 @@ sealed class CurrentSongEvent: MusicEvent() {
     data object ToggleSongContent: CurrentSongEvent()
     data class OnFavoriteIconClick(val index: Int): CurrentSongEvent()
     data object OnShareButtonClick: CurrentSongEvent()
+    data class OnProgressValueChanged(val value: Float): CurrentSongEvent()
 }
 
 data class PlayByOption(
