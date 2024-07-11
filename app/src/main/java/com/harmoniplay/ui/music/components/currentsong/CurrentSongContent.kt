@@ -292,7 +292,9 @@ fun CurrentSongContent(
          * **/
         Crossfade(
             targetState = currentSongState.song?.isFavorite,
-            label = "Fav Icon Animation"
+            label = "Fav Icon Animation",
+            modifier = Modifier
+                .layoutId(FAVORITE_ICON)
         ) { isFavorite ->
             Icon(
                 modifier = Modifier
@@ -304,8 +306,7 @@ fun CurrentSongContent(
                         currentSongState.currentSongIndex?.let {
                             onEvent(CurrentSongEvent.OnFavoriteIconClick(it))
                         }
-                    }
-                    .layoutId(FAVORITE_ICON),
+                    },
                 imageVector = if (isFavorite == true) {
                     Icons.Default.Favorite
                 } else Icons.Default.FavoriteBorder,
