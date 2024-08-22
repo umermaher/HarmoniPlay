@@ -99,15 +99,6 @@ fun MusicScreenContent(
         }
     }
 
-    // When scrolling starts, show the locator and schedule its hide after 2 seconds
-//    LaunchedEffect(isScrolling) {
-//        if (isScrolling) {
-//            isLocatorVisible = true
-//            delay(2000)
-//            isLocatorVisible = false
-//        }
-//        Log.i("isLocatorVisible", isLocatorVisible.toString())
-//    }
     var scrollJob by remember { mutableStateOf<Job?>(null) }
 
     LaunchedEffect(isScrolling) {
