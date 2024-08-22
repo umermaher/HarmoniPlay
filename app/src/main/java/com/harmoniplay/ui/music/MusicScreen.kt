@@ -107,8 +107,13 @@ fun MusicScreen(
         }
     }
 
-    BackHandler(state.isSearchBarShowing) {
-        onEvent(MusicEvent.HideSearchBar)
+    BackHandler(state.isSearchBarShowing || currentSongState.shouldExpandCurrentSongContent) {
+        if (state.isSearchBarShowing) {
+            onEvent(MusicEvent.HideSearchBar)
+        }
+        if (currentSongState.shouldExpandCurrentSongContent) {
+            onEvent(CurrentSongEvent.ToggleSongContent)
+        }
     }
 
     ObserveAsEvents(flow = result) { res ->

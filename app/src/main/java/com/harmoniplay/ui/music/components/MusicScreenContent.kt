@@ -1,5 +1,6 @@
 package com.harmoniplay.ui.music.components
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -16,9 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +39,9 @@ import com.harmoniplay.ui.music.MusicState
 import com.harmoniplay.ui.music.components.currentsong.CurrentSongBar
 import com.harmoniplay.ui.music.components.currentsong.CurrentSongLocator
 import com.harmoniplay.ui.music.components.musicknob.MusicKnob
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -52,6 +58,8 @@ fun MusicScreenContent(
             lazyListState.isScrollInProgress
         }
     }
+
+    var isLocatorVisible by remember { mutableStateOf(false) }
 
     val moonScrollSpeed = 0.05f
     val musicSoundIconsSpeed = 0.08f
@@ -87,6 +95,34 @@ fun MusicScreenContent(
                 musicSoundIconsOffset += delta * musicSoundIconsSpeed
                 windowAndShelfOffset += delta * windowAndShelfSpeed
                 return Offset.Zero
+            }
+        }
+    }
+
+    // When scrolling starts, show the locator and schedule its hide after 2 seconds
+//    LaunchedEffect(isScrolling) {
+//        if (isScrolling) {
+//            isLocatorVisible = true
+//            delay(2000)
+//            isLocatorVisible = false
+//        }
+//        Log.i("isLocatorVisible", isLocatorVisible.toString())
+//    }
+    var scrollJob by remember { mutableStateOf<Job?>(null) }
+
+    LaunchedEffect(isScrolling) {
+        if (isScrolling) {
+            isLocatorVisible = true
+            scrollJob?.cancel() // Cancel any existing coroutine
+            scrollJob = launch {
+                delay(2000)
+                isLocatorVisible = false
+            }
+        } else {
+            scrollJob?.cancel() // Cancel any existing coroutine when scrolling stops
+            scrollJob = launch {
+                delay(2000)
+                isLocatorVisible = false
             }
         }
     }
@@ -176,11 +212,11 @@ fun MusicScreenContent(
                     .align(Alignment.BottomEnd)
                     .offset(
                         x = (-10).dp,
-                        y = ( if(currentSongState.song != null) {
+                        y = (if (currentSongState.song != null) {
                             -10
-                        } else -60 ).dp
+                        } else -60).dp
                     ),
-                visible = isScrolling && currentSongState.song != null
+                visible = isLocatorVisible && currentSongState.song != null
             ) {
                 onEvent(
                     MusicEvent.OnScrollToCurrentSongClick
