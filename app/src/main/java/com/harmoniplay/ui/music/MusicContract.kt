@@ -39,7 +39,8 @@ data class CurrentSongState(
     val currentSongProgress: Float = 0f,
     val contentColorPalette: Map<String,String> = mapOf(),
     val volume: Float = 0f,
-    val shouldExpandCurrentSongContent: Boolean = false
+    val shouldExpandCurrentSongContent: Boolean = false,
+    val isUserChangingProgress: Boolean = false
 )
 
 sealed class MusicResult {
@@ -62,7 +63,6 @@ sealed class MusicEvent {
     data class OnVolumeChange(val volume: Float): MusicEvent()
     data class OnSongClick(val id: Long, val pos: Int): MusicEvent()
     data class OnFavoriteIconClick(val index: Int): MusicEvent()
-    data class OnProgressValueChanged(val value: Float): MusicEvent()
     class OnPlayBySettingsChanged(val playBy: PlayBy) : MusicEvent()
     data object OnScrollToCurrentSongClick: MusicEvent()
     data object OnQuitButtonClick: MusicEvent()
@@ -78,6 +78,7 @@ sealed class CurrentSongEvent: MusicEvent() {
     data class OnFavoriteIconClick(val index: Int): CurrentSongEvent()
     data object OnShareButtonClick: CurrentSongEvent()
     data class OnProgressValueChanged(val value: Float): CurrentSongEvent()
+    data object OnProgressValueChangedFinish: CurrentSongEvent()
 }
 
 data class PlayByOption(

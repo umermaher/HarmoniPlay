@@ -4,46 +4,65 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.harmoniplay.R
 
-val boldFontFamily = FontFamily(Font(R.font.avenir_roman_bold))
-val defaultFontFamily = FontFamily(Font(R.font.avenirltstd_roman))
-private val defaultTypography = Typography()
-val Typography = Typography(
-    displayLarge = defaultTypography.displayLarge.copy(fontFamily = boldFontFamily),
-    displayMedium = defaultTypography.displayMedium.copy(fontFamily = boldFontFamily),
-    displaySmall = defaultTypography.displaySmall.copy(fontFamily = boldFontFamily),
+val SpaceMono = FontFamily(
+    Font(
+        resId = R.font.space_mono_regular,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        resId = R.font.space_mono_italic,
+        weight = FontWeight.Normal,
+        style = FontStyle.Italic
+    ),
+    Font(
+        resId = R.font.space_mono_bold,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        resId = R.font.space_mono_bold_italic,
+        weight = FontWeight.Bold,
+        style = FontStyle.Italic
+    ),
+)
 
-//    headlineLarge = defaultTypography.headlineLarge.copy(fontFamily = defaultFontFamily),
-//    headlineMedium = defaultTypography.headlineMedium.copy(fontFamily = defaultFontFamily),
-//    headlineSmall = defaultTypography.headlineSmall.copy(fontFamily = defaultFontFamily),
+val bodyFontFamily = FontFamily(
+    Font(
+        resId = R.font.poppins_regular,
+        weight = FontWeight.Normal
+    )
+)
 
-    titleLarge = defaultTypography.titleLarge.copy(
-        fontFamily = boldFontFamily,
-    ),
-    titleMedium = defaultTypography.titleMedium.copy(
-        fontFamily = defaultFontFamily,
-        fontSize = 19.sp,
-        fontWeight = FontWeight.ExtraBold,
-    ),
-    titleSmall = defaultTypography.titleSmall.copy(
-        fontFamily = defaultFontFamily,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.ExtraBold,
-    ),
-    bodyLarge = defaultTypography.bodyLarge.copy(fontFamily = defaultFontFamily),
-    bodyMedium = defaultTypography.bodyMedium.copy(fontFamily = defaultFontFamily),
-    bodySmall = defaultTypography.bodySmall.copy(fontFamily = defaultFontFamily),
+val displayFontFamily = FontFamily(
+    Font(
+        resId = R.font.poppins_bold,
+        weight = FontWeight.Normal
+    )
+)
 
-    labelLarge = defaultTypography.labelLarge.copy(
-        fontFamily = defaultFontFamily,
-        fontSize = 15.sp,
-    ),
-    labelMedium = defaultTypography.labelMedium.copy(
-        fontFamily = defaultFontFamily,
-        fontWeight = FontWeight.Bold
-    ),
-    labelSmall = defaultTypography.labelSmall.copy(fontFamily = defaultFontFamily)
+
+// Default Material 3 typography values
+val baseline = Typography()
+
+val AppTypography = Typography(
+    displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
+    displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
+    displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
+    headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
+    headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
+    headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
+    titleLarge = baseline.titleLarge.copy(fontFamily = displayFontFamily),
+    titleMedium = baseline.titleMedium.copy(fontFamily = bodyFontFamily),
+    titleSmall = baseline.titleSmall.copy(fontFamily = displayFontFamily),
+    bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
+    bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
+    bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
+    labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
+    labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
+    labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
 )

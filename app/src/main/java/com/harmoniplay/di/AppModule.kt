@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
-import com.harmoniplay.data.music.db.model.SongObject
+import com.harmoniplay.data.music.models.SongObject
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.data.user.UserManagerImpl
 import com.harmoniplay.utils.HARMONI_PLAY_PREFS

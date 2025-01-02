@@ -85,25 +85,13 @@ fun Knob(
                  * [angle] value will be calculated as 0 to 180 when half passed [angle]
                  * will be from -180 to 0 degree
                  * */
-                /**
-                 * [angle] value will be calculated as 0 to 180 when half passed [angle]
-                 * will be from -180 to 0 degree
-                 * */
                 when (event.action) {
                     // Only these are necessary
                     MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                         /**
                          * [angle] between 25 to -25 is need as real knob works
                          * */
-                        /**
-                         * [angle] between 25 to -25 is need as real knob works
-                         * */
                         if (angle !in -limitingAngle..limitingAngle) {
-                            /**
-                             * Now we need angle from 25 to 335
-                             * as we know after 180 we get -180 and to -25 we need to add 360 angle
-                             * like if the angle is -150 then then we will get 210
-                             */
                             /**
                              * Now we need angle from 25 to 335
                              * as we know after 180 we get -180 and to -25 we need to add 360 angle

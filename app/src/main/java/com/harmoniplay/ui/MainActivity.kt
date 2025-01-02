@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import com.harmoniplay.service.PlayerService
 import com.harmoniplay.service.ServiceActions
 import com.harmoniplay.ui.theme.HarmoniPlayTheme
@@ -60,6 +61,8 @@ class MainActivity : ComponentActivity() {
                 zoomY.start()
             }
         }
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             HarmoniPlayTheme {

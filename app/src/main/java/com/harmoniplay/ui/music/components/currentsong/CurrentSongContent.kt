@@ -87,8 +87,7 @@ fun CurrentSongContent(
             .decodeToString()
     }
 
-    val backgroundColor = MaterialTheme.colorScheme.primary
-    val contentColorFromTheme = MaterialTheme.colorScheme.onPrimary
+    val contentColorFromTheme = MaterialTheme.colorScheme.onPrimaryContainer
     val palette = currentSongState.contentColorPalette
 
     val expandCurrentSongContent = currentSongState.shouldExpandCurrentSongContent
@@ -158,7 +157,7 @@ fun CurrentSongContent(
     val animatedBackgroundColor by animateColorAsState(
         targetValue = if (expandCurrentSongContent && palette.isNotEmpty()) {
             Color(parseColor(palette["darkMuted"]!!))
-        } else MaterialTheme.colorScheme.primary,
+        } else MaterialTheme.colorScheme.primaryContainer,
         label = "darkMutedSwatchColor"
     )
 //    val onDarkVibrant by animateColorAsState(
@@ -188,12 +187,12 @@ fun CurrentSongContent(
         }
     }
 
-    LaunchedEffect(key1 = expandCurrentSongContent, key2 = palette) {
-        val window = context.window
-        window.statusBarColor = if (expandCurrentSongContent && palette.isNotEmpty()) {
-            Color(parseColor(palette["darkMuted"]!!)).toArgb()
-        } else backgroundColor.toArgb()
-    }
+//    LaunchedEffect(key1 = expandCurrentSongContent, key2 = palette) {
+//        val window = context.window
+//        window.statusBarColor = if (expandCurrentSongContent && palette.isNotEmpty()) {
+//            Color(parseColor(palette["darkMuted"]!!)).toArgb()
+//        } else backgroundColor.toArgb()
+//    }
 
     MotionLayout(
         motionScene = MotionScene(motionScene),
@@ -339,7 +338,7 @@ fun CurrentSongContent(
                 .layoutId(SONG_TITLE),
             text = currentSongState.song?.title.toString(),
             color = contentColor,
-            fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
+            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
             fontWeight = FontWeight.ExtraBold,
             fontSize = songTitleProperties.value.fontSize("font_size")
         )
@@ -366,6 +365,9 @@ fun CurrentSongContent(
                 value = currentSongState.currentSongProgress,
                 onValueChange = {
                     onEvent(CurrentSongEvent.OnProgressValueChanged(it))
+                },
+                onValueChangeFinished = {
+                    onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
                 },
                 valueRange = 0f..song.duration.toFloat(),
                 colors = SliderDefaults.colors(

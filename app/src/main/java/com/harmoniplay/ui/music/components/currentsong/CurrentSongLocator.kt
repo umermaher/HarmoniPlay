@@ -7,6 +7,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GpsFixed
@@ -30,24 +32,30 @@ fun CurrentSongLocator(
     onClick: () -> Unit
 ) {
 
-    AnimatedVisibility(
-        modifier = modifier,
-        visible = visible,
-        enter = expandVertically(
-            expandFrom = Alignment.CenterVertically
-        ) + fadeIn(),
-        exit = shrinkVertically(
-            shrinkTowards = Alignment.CenterVertically
-        ) + fadeOut()
+    Column(
+        modifier = modifier
     ) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
+        AnimatedVisibility(
+            visible = visible,
+            enter = expandVertically(
+                expandFrom = Alignment.CenterVertically
+            ) + fadeIn(),
+            exit = shrinkVertically(
+                shrinkTowards = Alignment.CenterVertically
+            ) + fadeOut()
         ) {
-            Icon(
-                Icons.Filled.GpsFixed,
-                contentDescription = "Get Current Song."
-            )
+            SmallFloatingActionButton(
+                onClick = onClick,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
+            ) {
+                Icon(
+                    Icons.Filled.GpsFixed,
+                    contentDescription = "Get Current Song."
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
     }
 }

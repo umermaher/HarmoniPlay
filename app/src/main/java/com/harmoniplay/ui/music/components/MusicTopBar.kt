@@ -71,7 +71,7 @@ fun MusicTopBar(
     HPSearchBar(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(84.dp)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         isVisible = state.isSearchBarShowing,
         value = searchBarText,

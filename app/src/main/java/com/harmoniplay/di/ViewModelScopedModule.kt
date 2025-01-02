@@ -5,8 +5,8 @@ import android.database.Cursor
 import android.os.Build
 import android.provider.MediaStore
 import androidx.media3.exoplayer.ExoPlayer
-import com.harmoniplay.data.music.repository.MusicRepository
-import com.harmoniplay.data.music.repository.MusicRepositoryImpl
+import com.harmoniplay.domain.music.MusicRepository
+import com.harmoniplay.data.music.MusicRepositoryImpl
 import com.harmoniplay.data.music.volume.AndroidMusicStreamVolumeManager
 import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.music.MusicManager
@@ -29,18 +29,17 @@ object ViewModelScopedModule {
     fun provideMusicRepository(
         @ApplicationContext context: Context,
         cursor: Cursor?,
-        realm: Realm
-    ): MusicRepository = MusicRepositoryImpl(context, cursor, realm)
+        realm: Realm,
+        userManager: UserManager
+    ): MusicRepository = MusicRepositoryImpl(context, cursor, realm, userManager)
 
     @Provides
     @ViewModelScoped
-    fun provideMusicUseCase(
+    fun provideMusicManager(
         musicRepository: MusicRepository,
-        settingsRepository: UserManager,
         exoPlayer: ExoPlayer
     ): MusicManager = AndroidMusicManager(
         musicRepository = musicRepository,
-        userManager = settingsRepository,
         exoPlayer = exoPlayer
     )
 

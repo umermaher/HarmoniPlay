@@ -9,6 +9,6 @@ sealed class UiText {
 
     data class StringResource(
         @StringRes val value: Int,
-        val args: List<Any>
+        val args: List<Any> = emptyList()
     ): UiText()
 }

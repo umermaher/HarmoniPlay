@@ -28,7 +28,7 @@ fun OptionSheetCard(
         shape = RoundedCornerShape(16.dp), // Set the corner radius here
         onClick = onClick,
         colors = if(isSelected) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         } else CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row (
@@ -39,7 +39,8 @@ fun OptionSheetCard(
                 modifier = Modifier
                     .weight(1f),
                 text = stringResource(id = txtRes),
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
             )
         }
     }

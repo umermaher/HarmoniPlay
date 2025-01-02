@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -53,14 +54,6 @@ fun MusicScreenContent(
     onEvent: (MusicEvent) -> Unit,
 ) {
 
-    val isScrolling by remember {
-        derivedStateOf {
-            lazyListState.isScrollInProgress
-        }
-    }
-
-    var isLocatorVisible by remember { mutableStateOf(false) }
-
     val moonScrollSpeed = 0.05f
     val musicSoundIconsSpeed = 0.08f
     val windowAndShelfSpeed = 0.03f
@@ -99,38 +92,19 @@ fun MusicScreenContent(
         }
     }
 
-    var scrollJob by remember { mutableStateOf<Job?>(null) }
-
-    LaunchedEffect(isScrolling) {
-        if (isScrolling) {
-            isLocatorVisible = true
-            scrollJob?.cancel() // Cancel any existing coroutine
-            scrollJob = launch {
-                delay(2000)
-                isLocatorVisible = false
-            }
-        } else {
-            scrollJob?.cancel() // Cancel any existing coroutine when scrolling stops
-            scrollJob = launch {
-                delay(2000)
-                isLocatorVisible = false
-            }
-        }
-    }
-
-    Column(
-        modifier = modifier
-    ) {
-
+//    Column(
+//        modifier = modifier
+//    ) {
+//
         Box(
-            modifier = Modifier.weight(1f)
+            modifier = modifier
         ) {
 
             MusicKnob(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .zIndex(1f),
+                    .zIndex(if (state.shouldShowMusicKnob) 1f else 0f),
                 volumeInPercentage = currentSongState.volume,
                 shouldShow = state.shouldShowMusicKnob,
             ) {
@@ -141,13 +115,10 @@ fun MusicScreenContent(
                 state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .nestedScroll(nestedScrollConnection)
+                    .nestedScroll(nestedScrollConnection),
             ) {
 
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                item { Spacer(modifier = Modifier.height(8.dp)) }
 
                 itemsIndexed(
                     items = state.songs,
@@ -163,11 +134,10 @@ fun MusicScreenContent(
                     SongCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .animateItemPlacement(
-                                animationSpec = tween(
-                                    durationMillis = 300
-                                )
+                            .animateItem()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 6.dp
                             ),
                         song = song,
                         isCurrentSong = isCurrentSong,
@@ -178,7 +148,10 @@ fun MusicScreenContent(
                             onEvent(MusicEvent.OnFavoriteIconClick(index))
                         },
                         onProgressValueChanged = {
-                            onEvent(MusicEvent.OnProgressValueChanged(it))
+                            onEvent(CurrentSongEvent.OnProgressValueChanged(it))
+                        },
+                        onProgressValueChangedFinished = {
+                            onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
                         },
                         onClick = {
                             onEvent(
@@ -197,22 +170,6 @@ fun MusicScreenContent(
                     }
                 }
             }
-
-            CurrentSongLocator(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(
-                        x = (-10).dp,
-                        y = (if (currentSongState.song != null) {
-                            -10
-                        } else -60).dp
-                    ),
-                visible = isLocatorVisible && currentSongState.song != null
-            ) {
-                onEvent(
-                    MusicEvent.OnScrollToCurrentSongClick
-                )
-            }
         }
 
 //        CurrentSongBar(
@@ -228,8 +185,8 @@ fun MusicScreenContent(
 //            }
 //        )
 
-        if(currentSongState.song != null) {
-            Spacer(modifier = Modifier.size(50.dp))
-        }
-    }
+//        if(currentSongState.song != null) {
+//            Spacer(modifier = Modifier.size(50.dp))
+//        }
+//    }
 }

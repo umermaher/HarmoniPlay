@@ -14,10 +14,10 @@
                 android:gradientRadius="26"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="#FF5880C4"/>
-                <item android:offset="0.193" android:color="#FF5880C4"/>
-                <item android:offset="0.703" android:color="#FF5880C4"/>
-                <item android:offset="1" android:color="#FF5880C4"/>
+                <item android:offset="0" android:color="#FF4E8050"/>
+                <item android:offset="0.193" android:color="#FF4E8050"/>
+                <item android:offset="0.703" android:color="#FF4E8050"/>
+                <item android:offset="1" android:color="#FF4E8050"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -30,10 +30,10 @@
                 android:gradientRadius="28.77"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="#FF5880C4"/>
-                <item android:offset="0.193" android:color="#FF5880C4"/>
-                <item android:offset="0.703" android:color="#FF5880C4"/>
-                <item android:offset="1" android:color="#FF5880C4"/>
+                <item android:offset="0" android:color="#FF4E8050"/>
+                <item android:offset="0.193" android:color="#FF4E8050"/>
+                <item android:offset="0.703" android:color="#FF4E8050"/>
+                <item android:offset="1" android:color="#FF4E8050"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -46,10 +46,10 @@
                 android:gradientRadius="31.504"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="#FF5880C4"/>
-                <item android:offset="0.193" android:color="#FF5880C4"/>
-                <item android:offset="0.703" android:color="#FF5880C4"/>
-                <item android:offset="1" android:color="#FF5880C4"/>
+                <item android:offset="0" android:color="#FF4E8050"/>
+                <item android:offset="0.193" android:color="#FF4E8050"/>
+                <item android:offset="0.703" android:color="#FF4E8050"/>
+                <item android:offset="1" android:color="#FF4E8050"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -62,10 +62,10 @@
                 android:gradientRadius="27.938"
                 android:tileMode="mirror"
                 android:type="radial">
-                <item android:offset="0" android:color="#FF5880C4"/>
-                <item android:offset="0.193" android:color="#FF5880C4"/>
-                <item android:offset="0.703" android:color="#FF5880C4"/>
-                <item android:offset="1" android:color="#FF5880C4"/>
+                <item android:offset="0" android:color="#FF4E8050"/>
+                <item android:offset="0.193" android:color="#FF4E8050"/>
+                <item android:offset="0.703" android:color="#FF4E8050"/>
+                <item android:offset="1" android:color="#FF4E8050"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -79,9 +79,9 @@
                 android:endY="56"
                 android:tileMode="mirror"
                 android:type="linear">
-                <item android:offset="0" android:color="#FF002D6F"/>
-                <item android:offset="0.996" android:color="#FF002D6F"/>
-                <item android:offset="1" android:color="#FF002D6F"/>
+                <item android:offset="0" android:color="#FF1B4C23"/>
+                <item android:offset="0.996" android:color="#FF1B4C23"/>
+                <item android:offset="1" android:color="#FF1B4C23"/>
             </gradient>
         </aapt:attr>
     </path>
@@ -95,9 +95,9 @@
                 android:endY="55.924"
                 android:tileMode="mirror"
                 android:type="linear">
-                <item android:offset="0" android:color="#FF002D6F"/>
-                <item android:offset="0.428" android:color="#FF5880C4"/>
-                <item android:offset="1" android:color="#FF002D6F"/>
+                <item android:offset="0" android:color="#FF1B4C23"/>
+                <item android:offset="0.428" android:color="#FF4E8050"/>
+                <item android:offset="1" android:color="#FF1B4C23"/>
             </gradient>
         </aapt:attr>
     </path>

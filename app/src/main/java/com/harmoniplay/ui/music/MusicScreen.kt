@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,9 +22,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +41,7 @@ import com.harmoniplay.ui.MainActivity
 import com.harmoniplay.ui.music.components.MusicScreenContent
 import com.harmoniplay.ui.music.components.MusicTopBar
 import com.harmoniplay.ui.music.components.currentsong.CurrentSongContent
+import com.harmoniplay.ui.music.components.currentsong.CurrentSongLocator
 import com.harmoniplay.utils.composables.ConfirmDialog
 import com.harmoniplay.utils.composables.GeneralBottomSheet
 import com.harmoniplay.utils.composables.MusicPermissionTextProvider
@@ -49,6 +56,8 @@ import com.harmoniplay.utils.hasPermissions
 import com.harmoniplay.utils.openAppSettings
 import com.harmoniplay.utils.showToast
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,6 +79,14 @@ fun MusicScreen(
     val lazyListState = rememberLazyListState()
 
     val scope = rememberCoroutineScope()
+
+    val isScrolling by remember {
+        derivedStateOf {
+            lazyListState.isScrollInProgress
+        }
+    }
+
+    var isLocatorVisible by remember { mutableStateOf(false) }
 
     val permissionsToRequest = remember {
         val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -107,6 +124,24 @@ fun MusicScreen(
         }
     }
 
+    var scrollJob by remember { mutableStateOf<Job?>(null) }
+    LaunchedEffect(isScrolling) {
+        if (isScrolling) {
+            isLocatorVisible = true
+            scrollJob?.cancel() // Cancel any existing coroutine
+            scrollJob = launch {
+                delay(2000)
+                isLocatorVisible = false
+            }
+        } else {
+            scrollJob?.cancel() // Cancel any existing coroutine when scrolling stops
+            scrollJob = launch {
+                delay(2000)
+                isLocatorVisible = false
+            }
+        }
+    }
+
     BackHandler(state.isSearchBarShowing || currentSongState.shouldExpandCurrentSongContent) {
         if (state.isSearchBarShowing) {
             onEvent(MusicEvent.HideSearchBar)
@@ -129,7 +164,7 @@ fun MusicScreen(
 
             is MusicResult.ScrollToPosition -> {
                 scope.launch {
-                    lazyListState.animateScrollToItem(index = res.pos)
+                    lazyListState.scrollToItem(index = res.pos)
                 }
             }
 
@@ -174,9 +209,30 @@ fun MusicScreen(
                     scrollBehavior = scrollBehavior
                 )
             },
+            floatingActionButton = {
+                CurrentSongLocator(
+                    visible = isLocatorVisible && currentSongState.song != null
+                ) {
+                    onEvent(
+                        MusicEvent.OnScrollToCurrentSongClick
+                    )
+                }
+            }
         ) { values ->
             when {
-                state.songs.isEmpty() && !state.isLoading -> {
+                state.songs.isNotEmpty() -> {
+                    MusicScreenContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(values),
+                        state = state,
+                        currentSongState = currentSongState,
+                        lazyListState = lazyListState,
+                        onEvent = onEvent
+                    )
+                }
+                state.isLoading -> ProgressIndicator()
+                else -> {
                     val modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp)
@@ -195,20 +251,6 @@ fun MusicScreen(
                             msgRes = R.string.empty_string
                         )
                     }
-                }
-
-                state.isLoading -> ProgressIndicator()
-
-                else -> {
-                    MusicScreenContent(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(values),
-                        state = state,
-                        currentSongState = currentSongState,
-                        lazyListState = lazyListState,
-                        onEvent = onEvent
-                    )
                 }
             }
         }

@@ -33,4 +33,5 @@
     <string name="knob">Knob</string>
     <string name="done">Done</string>
     <string name="only_favorite_can_be_play">Only Favorite songs can be played!</string>
+    <string name="failed_to_get_songs">Failed to get Songs!</string>
 </resources>

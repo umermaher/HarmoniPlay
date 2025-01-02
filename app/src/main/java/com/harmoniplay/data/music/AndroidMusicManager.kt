@@ -5,74 +5,31 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.harmoniplay.data.music.repository.MusicRepository
+import com.harmoniplay.domain.utils.Result
+import com.harmoniplay.domain.music.MusicRepository
 import com.harmoniplay.domain.music.MusicManager
 import com.harmoniplay.domain.music.PlayBy
-import com.harmoniplay.domain.user.UserManager
 import com.harmoniplay.domain.music.PlayBy.*
 import com.harmoniplay.domain.music.Song
 import com.harmoniplay.domain.music.SongDomain
-import com.harmoniplay.domain.music.toSongDomain
-import com.harmoniplay.domain.music.toSongObject
-import com.harmoniplay.utils.Resource2
+import com.harmoniplay.domain.utils.DataError
 import com.harmoniplay.utils.TIME_UPDATED_INTERVAL
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 class AndroidMusicManager(
     private val musicRepository: MusicRepository,
-    private val userManager: UserManager,
     private val exoPlayer: ExoPlayer,
 ): MusicManager {
 
-    private val _localSongs = MutableStateFlow<List<LocalSong>>(emptyList())
-
-    private val _playBy = MutableStateFlow(
-        when(userManager.getPlayMusicBy()) {
-            ALL.toString() -> ALL
-            else -> ONLY_FAVORITE
-        }
-    )
-    override val playBy: StateFlow<PlayBy>
-        get() = _playBy.asStateFlow()
-
-    private val scope = CoroutineScope(Dispatchers.Main)
-
-    private val favSongsIds = musicRepository.getFavoriteSongsIds().map {
-        it
-    }.stateIn(scope, SharingStarted.WhileSubscribed(), emptyList<Long>())
-
-    override val songs = combine(
-        _localSongs,
-        favSongsIds,
-        playBy
-    ) { songs, favIds, pb ->
-
-        when (pb) {
-            ALL -> songs.map {
-                it.toSongDomain(
-                    isFavorite = it.id in favIds
-                )
-            }
-            ONLY_FAVORITE -> songs.filter {
-                it.id in favIds
-            }.map {
-                it.toSongDomain(true)
-            }
-        }
-    }.stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
+    override val playBy: StateFlow<PlayBy> = musicRepository.playBy
+    override val songs = musicRepository.songs
 
     private val _currentSong = MutableStateFlow<SongDomain?>(null)
     override val currentSong: StateFlow<Song?>
@@ -90,8 +47,8 @@ class AndroidMusicManager(
     override val isLoading: StateFlow<Boolean>
         get() = _isLoading.asStateFlow()
 
-    private val _error = MutableSharedFlow<String>()
-    override val error: SharedFlow<String>
+    private val _error = MutableSharedFlow<DataError.Local>()
+    override val error: SharedFlow<DataError.Local>
         get() = _error.asSharedFlow()
 
     // Check if the ExoPlayer has media items
@@ -121,23 +78,21 @@ class AndroidMusicManager(
 
     override suspend fun getAllSongs() {
         when (val res = musicRepository.fetchSongs()) {
-            is Resource2.Error -> {
-                Log.i("error in fetching songs", res.message.toString())
-                res.message?.let {
-                    _error.emit(it)
-                }
+            is Result.Error -> {
+                _isLoading.update { false }
+                _error.emit(res.error)
             }
-            is Resource2.Success -> {
-                _localSongs.update { res.data ?: emptyList() }
-                while(res.data?.isNotEmpty() == true && hasCurrentMediaItems()) {
-                    if(songs.value.isNotEmpty()) {
-                        resumeState()
-                        break
-                    }
+            is Result.Success -> {
+                while (songs.value.isEmpty() && playBy.value != ONLY_FAVORITE) {
                     delay(TIME_UPDATED_INTERVAL)
                 }
-                delay(TIME_UPDATED_INTERVAL * 3)
+                if (hasCurrentMediaItems()) {
+                    Log.i("Resuming", "resuming current song state")
+                    resumeState()
+                }
+                delay(TIME_UPDATED_INTERVAL)
                 _isLoading.update { false }
+                Log.i("Resuming", "break")
             }
         }
     }
@@ -186,7 +141,6 @@ class AndroidMusicManager(
 
     override suspend fun toggleFavoriteSong(index: Int) {
         val song = songs.value[index]
-        val songObject = song.toSongObject()
         if(song.isFavorite) {
             // if play by is fav then only favorite songs will be played
             if (playBy.value == ONLY_FAVORITE) {
@@ -199,12 +153,12 @@ class AndroidMusicManager(
                     it?.copy(isFavorite = false)
                 }
             }
-            musicRepository.deleteSong(songObject = songObject)
+            musicRepository.deleteSong(song = song)
         } else {
             _currentSong.update {
                 it?.copy(isFavorite = true)
             }
-            musicRepository.addSong(songObject = songObject)
+            musicRepository.addSong(song)
         }
     }
 
@@ -217,16 +171,9 @@ class AndroidMusicManager(
     }
 
     override suspend fun changePlayBy(value: PlayBy) {
-        val hadCurrentSong = _currentSong.value != null
-        _isPlaying.update { false }
-        _currentSong.update { null }
-        _currentSongIndex.update { null }
-        userManager.playMusicBy(value.name)
+        stopState()
+        musicRepository.playMusicBy(value)
         exoPlayer.clearMediaItems()
-        if(hadCurrentSong && favSongsIds.value.isEmpty()) {
-            delay(500)
-        }
-        _playBy.update { value }
     }
 
     override fun shutDownPlayer() {
@@ -245,6 +192,12 @@ class AndroidMusicManager(
                 songs.value[exoPlayer.currentMediaItemIndex]
             }
         }
+    }
+
+    private fun stopState() {
+        _isPlaying.update { false }
+        _currentSong.update { null }
+        _currentSongIndex.update { null }
     }
 
     private fun getMediaItems(): MutableList<MediaItem> {

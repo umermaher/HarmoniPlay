@@ -1,5 +1,6 @@
 package com.harmoniplay.domain.music
 
+import com.harmoniplay.domain.utils.DataError
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -10,7 +11,7 @@ interface MusicManager {
     val isPlaying: StateFlow<Boolean>
     val isLoading: StateFlow<Boolean>
     val playBy: StateFlow<PlayBy>
-    val error: SharedFlow<String>
+    val error: SharedFlow<DataError.Local>
     suspend fun getAllSongs()
 //    suspend fun getAllFavSongsIds(): Flow<List<Long>>
     fun selectSong(index: Int)

@@ -2,8 +2,8 @@
   ConstraintSets: {
     start: {
       artwork_image: {
-        width: 45,
-        height: 35,
+        width: 47,
+        height: 37,
         start: ['parent', 'start', 10],
         bottom: ['parent', 'bottom', 8],
       },
@@ -27,14 +27,14 @@
         start: ['artwork_image', 'end'],
         end: ['play_previous', 'start'],
         custom: {
-          font_size: 15
+          font_size: 13
         }
       },
       artist_name: {
-        top: ['song_title', 'bottom'],
+        bottom: ['artwork_image', 'bottom'],
         start: ['song_title', 'start', 10],
         custom: {
-          font_size: 12
+          font_size: 11
         }
       },
       favorite_icon: {
@@ -87,7 +87,7 @@
       top_app_bar: {
         width: 'spread',
         height: 64,
-        top: ['parent', 'top'],
+        top: ['parent', 'top', 20],
         end: ['parent', 'end'],
         start: ['parent', 'start']
       },
@@ -96,7 +96,7 @@
         height: '37.4%',
         start: ['parent', 'start', 24],
         end: ['parent', 'end', 24],
-        top: ['top_app_bar', 'bottom', 16],
+        top: ['top_app_bar', 'bottom', 36],
       },
       artwork_image_background: {
         width: 'spread',
@@ -123,6 +123,7 @@
         top: ['favorite_icon', 'top'],
         start: ['artwork_image', 'start'],
         end: ['favorite_icon', 'start', 16],
+        bottom: ['favorite_icon', 'bottom'],
         custom: {
           font_size: 25
         }

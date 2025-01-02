@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#FF1B1C1F</color>
-    <color name="primary">#FF4285F4</color>
-    <color name="on_background">#FFE1E3E6</color>
-    <color name="secondary_container">#FF444D58</color>
-    <color name="primary_container">#FF7DADFF</color>
+    <color name="background">#FF101410</color>
+    <color name="primary">#FFA2D8A1</color>
+    <color name="on_background">#FFE0E4DB</color>
+    <color name="secondary_container">#FF839680</color>
+    <color name="primary_container">#FFBDD0B9</color>
 </resources>

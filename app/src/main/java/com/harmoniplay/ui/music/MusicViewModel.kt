@@ -9,6 +9,8 @@ import com.harmoniplay.R
 import com.harmoniplay.domain.music.MusicManager
 import com.harmoniplay.domain.music.PlayBy
 import com.harmoniplay.domain.user.UserManager
+import com.harmoniplay.domain.utils.DataError
+import com.harmoniplay.domain.utils.DataError.Local.*
 import com.harmoniplay.domain.volume.StreamVolumeManager
 import com.harmoniplay.service.ServiceActions
 import com.harmoniplay.utils.composables.UiText
@@ -31,7 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MusicViewModel @Inject constructor(
-    private val musicUseCase: MusicManager,
+    private val musicManager: MusicManager,
     private val userManager: UserManager,
     private val musicStreamVolumeManager: StreamVolumeManager
 ): ViewModel() {
@@ -49,9 +51,9 @@ class MusicViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     val state = combine(
         _searchText.debounce(500),
-        musicUseCase.songs,
-        musicUseCase.playBy,
-        musicUseCase.isLoading,
+        musicManager.songs,
+        musicManager.playBy,
+        musicManager.isLoading,
         _state,
     ) { searchText, songs, playBy, isLoading, state ->
 
@@ -70,9 +72,9 @@ class MusicViewModel @Inject constructor(
 
     private val _currentSongState = MutableStateFlow(CurrentSongState())
     val currentSongState = combine(
-        musicUseCase.isPlaying,
-        musicUseCase.currentSong,
-        musicUseCase.currentSongIndex,
+        musicManager.isPlaying,
+        musicManager.currentSong,
+        musicManager.currentSongIndex,
         musicStreamVolumeManager.volume,
         _currentSongState
     ) { isPlaying, song, index, volume, state ->
@@ -80,16 +82,18 @@ class MusicViewModel @Inject constructor(
             isPlaying = isPlaying,
             song = song,
             currentSongIndex = index,
-            currentSongProgress = musicUseCase.getCurrentSongPosition(),
+            currentSongProgress = musicManager.getCurrentSongPosition(),
             volume = volume
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _currentSongState.value)
 
     private val updateSongProgressJob = viewModelScope.launch {
         while (true) {
-            _currentSongState.update {
-                it.copy(currentSongProgress = musicUseCase.getCurrentSongPosition())
-            }
+            if(!_currentSongState.value.isUserChangingProgress) {
+                _currentSongState.update {
+                    it.copy(currentSongProgress = musicManager.getCurrentSongPosition())
+                }
+            } else delay(1000)
             delay(1000) // Delay for 1 second
         }
     }
@@ -101,28 +105,35 @@ class MusicViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            musicUseCase.getAllSongs()
+            musicManager.getAllSongs()
         }
 
-        musicUseCase.error.onEach { error ->
+        musicManager.error.onEach { error ->
             _state.update { it.copy(
                 isLoading = false,
             ) }
-            error.let {
-                resultChannel.send(
-                    MusicResult.Message(
-                        UiText.DynamicString(it)
-                    )
-                )
-            }
+            message(error)
         }.launchIn(viewModelScope)
+    }
+
+    private suspend fun message(error: DataError.Local) {
+        resultChannel.send(
+            MusicResult.Message(
+                UiText.StringResource(
+                    when (error) {
+                        DISK_FULL -> R.string.permission_required
+                        PERMISSION_REQUIRED -> R.string.permission_required
+                        DISK_EMPTY -> R.string.no_songs_msg
+                        FAILED_TO_GET -> R.string.failed_to_get_songs
+                    },
+                )
+            )
+        )
     }
 
     fun onEvent(event: MusicEvent) {
         when (event) {
             is MusicEvent.OnSongClick -> playSong(id = event.id, pos = event.pos)
-
-            is MusicEvent.OnProgressValueChanged -> musicUseCase.changeProgress(event.value.toLong())
 
             MusicEvent.OnScrollToCurrentSongClick -> scrollToCurrentSong()
 
@@ -138,7 +149,7 @@ class MusicViewModel @Inject constructor(
                     resultChannel.send(
                         MusicResult.StartPlayerService(action = ServiceActions.STOP)
                     )
-                    musicUseCase.changePlayBy(event.playBy)
+                    musicManager.changePlayBy(event.playBy)
                 }
             }
 
@@ -190,7 +201,7 @@ class MusicViewModel @Inject constructor(
                 _state.update {
                     it.copy(shouldShowQuitDialog = false)
                 }
-                musicUseCase.shutDownPlayer()
+                musicManager.shutDownPlayer()
                 resultChannel.send(
                     MusicResult.StartPlayerService(
                         action = ServiceActions.STOP,
@@ -205,14 +216,14 @@ class MusicViewModel @Inject constructor(
 
             CurrentSongEvent.OnPlayClick -> {
                 if(currentSongState.value.isPlaying) {
-                    musicUseCase.pause()
+                    musicManager.pause()
                 } else
-                    musicUseCase.play()
+                    musicManager.play()
             }
 
-            CurrentSongEvent.SkipNext -> musicUseCase.skipToNextSong()
+            CurrentSongEvent.SkipNext -> musicManager.skipToNextSong()
 
-            CurrentSongEvent.SkipPrevious -> musicUseCase.skipToPreviousSong()
+            CurrentSongEvent.SkipPrevious -> musicManager.skipToPreviousSong()
 
             is CurrentSongEvent.OnColorPaletteChange -> _currentSongState.update {
                 it.copy(contentColorPalette = event.contentColorPalette)
@@ -237,7 +248,19 @@ class MusicViewModel @Inject constructor(
                 }
             }
 
-            is CurrentSongEvent.OnProgressValueChanged -> musicUseCase.changeProgress(event.value.toLong())
+            is CurrentSongEvent.OnProgressValueChanged -> {
+                musicManager.changeProgress(event.value.toLong())
+                _currentSongState.update {
+                    it.copy(
+                        currentSongProgress = event.value,
+                        isUserChangingProgress = true,
+                    )
+                }
+            }
+
+            CurrentSongEvent.OnProgressValueChangedFinish -> _currentSongState.update {
+                it.copy(isUserChangingProgress = false)
+            }
         }
     }
 
@@ -252,7 +275,7 @@ class MusicViewModel @Inject constructor(
                 )
             )
         }
-        musicUseCase.toggleFavoriteSong(index)
+        musicManager.toggleFavoriteSong(index)
     }
 
     private fun playSong(id: Long, pos: Int) {
@@ -266,9 +289,9 @@ class MusicViewModel @Inject constructor(
                 )
             }
             if (_searchText.value.isNotEmpty()) {
-                musicUseCase.selectSong(id = id)
+                musicManager.selectSong(id = id)
             } else {
-                musicUseCase.selectSong(index = pos)
+                musicManager.selectSong(index = pos)
             }
         }
     }
@@ -311,7 +334,7 @@ class MusicViewModel @Inject constructor(
 
             if(permission == storagePermission || permission == notificationPermission) {
                 viewModelScope.launch {
-                    musicUseCase.getAllSongs()
+                    musicManager.getAllSongs()
                 }
             }
         }

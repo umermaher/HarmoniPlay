@@ -1,4 +1,4 @@
-package com.harmoniplay.data.music
+package com.harmoniplay.data.music.models
 
 import android.net.Uri
 
@@ -10,5 +10,4 @@ data class LocalSong(
     val size: Int,
     val artworkUri: Uri,
     val duration: Int,
-    val durationInFormat: String
 )

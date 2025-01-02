@@ -140,7 +140,7 @@ fun LoginScreen(
                         .fillMaxWidth(),
                     text = activity.getString(R.string.add_details_to_contine),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(30.dp))
             }

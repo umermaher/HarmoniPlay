@@ -1,16 +1,22 @@
 package com.harmoniplay.utils.composables
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -28,9 +34,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -104,51 +114,70 @@ fun HPSearchBar(
             modifier = Modifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier
-                    .height(52.dp)
-                    .weight(1f)
-                    .defaultMinSize(minHeight = 48.dp)
-                    .focusRequester(focusRequester),
-                placeholder = {
-                    Text(text = stringResource(id = R.string.search_dots))
-                },
-                shape = RoundedCornerShape(percent = 100),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                ),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search
-                ),
-                leadingIcon = {
-                    IconButton(
-                        onClick = hide
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Back Button",
-                        )
-                    }
-                },
-                trailingIcon = {
-                    if (value.isNotEmpty()) {
-                        IconButton(
-                            onClick = clear
+            Column {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = modifier
+                        .clip(RoundedCornerShape(100))
+                        .focusRequester(focusRequester)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .onSizeChanged {
+                            Log.d("TAG", "HPSearchBar: ${it.height}")
+                        },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Search
+                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "Clear field",
-                            )
+                            // Leading Icon
+                            IconButton(
+                                onClick = hide
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    contentDescription = "Back Button",
+                                )
+                            }
+
+                            // Placeholder
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (value.isEmpty()) {
+                                    Text(
+                                        text = stringResource(id = R.string.search_dots),
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        ),
+                                    )
+                                }
+                                innerTextField()
+                            }
+
+                            // Trailing Icon
+                            if (value.isNotEmpty()) {
+                                IconButton(onClick = clear) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Clear field",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
