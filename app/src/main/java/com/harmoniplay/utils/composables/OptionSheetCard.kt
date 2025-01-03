@@ -40,7 +40,6 @@ fun OptionSheetCard(
                     .weight(1f),
                 text = stringResource(id = txtRes),
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
             )
         }
     }

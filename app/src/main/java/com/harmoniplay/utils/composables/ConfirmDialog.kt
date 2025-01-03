@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.harmoniplay.R
@@ -36,7 +35,6 @@ fun ConfirmDialog(
                     text = confirmText,
                     modifier = Modifier
                         .padding(vertical = 8.dp),
-                    fontWeight = FontWeight.Bold,
                 )
             }
         },
@@ -45,7 +43,6 @@ fun ConfirmDialog(
                 Text(
                     text = cancelText,
                     modifier = Modifier.padding(vertical = 8.dp),
-                    fontWeight = FontWeight.Bold,
                 )
             }
         },

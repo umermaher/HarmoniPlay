@@ -64,6 +64,7 @@ fun MusicScreenContent(
     var musicSoundIconsOffset by remember {
         mutableFloatStateOf(0f)
     }
+
     /**
      * [windowAndShelfOffset] was also added to image height to decrease the height of image
      * but changing the height can make list laggy due to slightly decrement in the size
@@ -96,81 +97,94 @@ fun MusicScreenContent(
 //        modifier = modifier
 //    ) {
 //
-        Box(
-            modifier = modifier
+
+    var zIndex by remember {
+        mutableFloatStateOf(1f)
+    }
+
+    LaunchedEffect(state.shouldShowMusicKnob) {
+        zIndex = if (state.shouldShowMusicKnob) {
+            1f
+        } else {
+            delay(500)
+            0f
+        }
+    }
+    Box(
+        modifier = modifier
+    ) {
+
+        MusicKnob(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .zIndex(zIndex),
+            volumeInPercentage = currentSongState.volume,
+            shouldShow = state.shouldShowMusicKnob,
+        ) {
+            onEvent(MusicEvent.OnVolumeChange(it))
+        }
+
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(nestedScrollConnection),
         ) {
 
-            MusicKnob(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .zIndex(if (state.shouldShowMusicKnob) 1f else 0f),
-                volumeInPercentage = currentSongState.volume,
-                shouldShow = state.shouldShowMusicKnob,
-            ) {
-                onEvent(MusicEvent.OnVolumeChange(it))
-            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection),
-            ) {
+            itemsIndexed(
+                items = state.songs,
+                key = { index, song ->
+                    if (index == 0) {
+                        index
+                    } else song.id
+                }
+            ) { index, song ->
 
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                val isCurrentSong = currentSongState.song?.id == song.id
 
-                itemsIndexed(
-                    items = state.songs,
-                    key = { index, song ->
-                        if (index == 0) {
-                            index
-                        } else song.id
-                    }
-                ) { index, song ->
-
-                    val isCurrentSong = currentSongState.song?.id == song.id
-
-                    SongCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem()
-                            .padding(
-                                horizontal = 16.dp,
-                                vertical = 6.dp
-                            ),
-                        song = song,
-                        isCurrentSong = isCurrentSong,
-                        currentSongProgress = if (isCurrentSong) {
-                            currentSongState.currentSongProgress
-                        } else null,
-                        onFavoriteIconClick = {
-                            onEvent(MusicEvent.OnFavoriteIconClick(index))
-                        },
-                        onProgressValueChanged = {
-                            onEvent(CurrentSongEvent.OnProgressValueChanged(it))
-                        },
-                        onProgressValueChangedFinished = {
-                            onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
-                        },
-                        onClick = {
-                            onEvent(
-                                MusicEvent.OnSongClick(song.id, index)
-                            )
-                        }
-                    )
-
-                    // Add additional content after 10 items
-                    if (index == 8 && !isSystemInDarkTheme()) {
-                        ParallaxScrollEffectContent(
-                            windowAndShelfOffset = windowAndShelfOffset,
-                            moonOffset = moonOffset,
-                            musicSoundIconsOffset = musicSoundIconsOffset
+                SongCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItem()
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 6.dp
+                        ),
+                    song = song,
+                    isCurrentSong = isCurrentSong,
+                    currentSongProgress = if (isCurrentSong) {
+                        currentSongState.currentSongProgress
+                    } else null,
+                    onFavoriteIconClick = {
+                        onEvent(MusicEvent.OnFavoriteIconClick(index))
+                    },
+                    onProgressValueChanged = {
+                        onEvent(CurrentSongEvent.OnProgressValueChanged(it))
+                    },
+                    onProgressValueChangedFinished = {
+                        onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
+                    },
+                    onClick = {
+                        onEvent(
+                            MusicEvent.OnSongClick(song.id, index)
                         )
                     }
+                )
+
+                // Add additional content after 10 items
+                if (index == 8 && !isSystemInDarkTheme()) {
+                    ParallaxScrollEffectContent(
+                        windowAndShelfOffset = windowAndShelfOffset,
+                        moonOffset = moonOffset,
+                        musicSoundIconsOffset = musicSoundIconsOffset
+                    )
                 }
             }
         }
+    }
 
 //        CurrentSongBar(
 //            currentSongState = currentSongState,

@@ -40,8 +40,8 @@ val bodyFontFamily = FontFamily(
 
 val displayFontFamily = FontFamily(
     Font(
-        resId = R.font.poppins_bold,
-        weight = FontWeight.Normal
+        resId = R.font.poppins_regular,
+        weight = FontWeight.Bold
     )
 )
 

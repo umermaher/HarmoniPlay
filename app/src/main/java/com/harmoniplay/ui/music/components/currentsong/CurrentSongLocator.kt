@@ -44,10 +44,7 @@ fun CurrentSongLocator(
                 shrinkTowards = Alignment.CenterVertically
             ) + fadeOut()
         ) {
-            SmallFloatingActionButton(
-                onClick = onClick,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 0.dp)
-            ) {
+            SmallFloatingActionButton(onClick = onClick) {
                 Icon(
                     Icons.Filled.GpsFixed,
                     contentDescription = "Get Current Song."
@@ -55,7 +52,7 @@ fun CurrentSongLocator(
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(60.dp))
 
     }
 }
