@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.harmoniplay.R
 import com.harmoniplay.ui.music.MusicEvent
@@ -95,7 +96,9 @@ fun MusicTopBar(
                     text = when (state.topBarTitle) {
                         is UiText.DynamicString -> state.topBarTitle.value
                         is UiText.StringResource -> stringResource(id = state.topBarTitle.value)
-                    }
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             },
             navigationIcon = {
