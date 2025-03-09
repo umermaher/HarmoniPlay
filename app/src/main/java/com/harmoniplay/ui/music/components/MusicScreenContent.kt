@@ -1,8 +1,14 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.harmoniplay.ui.music.components
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,12 +50,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MusicScreenContent(
+fun SharedTransitionScope.MusicScreenContent(
     modifier: Modifier = Modifier,
     state: MusicState,
     currentSongState: CurrentSongState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     lazyListState: LazyListState,
     onEvent: (MusicEvent) -> Unit,
 ) {
@@ -125,79 +131,87 @@ fun MusicScreenContent(
             onEvent(MusicEvent.OnVolumeChange(it))
         }
 
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(nestedScrollConnection),
-        ) {
+        Column {
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .nestedScroll(nestedScrollConnection),
+            ) {
 
-            item { Spacer(modifier = Modifier.height(8.dp)) }
+                item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            itemsIndexed(
-                items = state.songs,
-                key = { index, song ->
-                    if (index == 0) {
-                        index
-                    } else song.id
-                }
-            ) { index, song ->
+                itemsIndexed(
+                    items = state.songs,
+                    key = { index, song ->
+                        if (index == 0) {
+                            index
+                        } else song.id
+                    }
+                ) { index, song ->
 
-                val isCurrentSong = currentSongState.song?.id == song.id
+                    val isCurrentSong = currentSongState.song?.id == song.id
 
-                SongCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItem()
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 6.dp
-                        ),
-                    song = song,
-                    isCurrentSong = isCurrentSong,
-                    currentSongProgress = if (isCurrentSong) {
-                        currentSongState.currentSongProgress
-                    } else null,
-                    onFavoriteIconClick = {
-                        onEvent(MusicEvent.OnFavoriteIconClick(index))
-                    },
-                    onProgressValueChanged = {
-                        onEvent(CurrentSongEvent.OnProgressValueChanged(it))
-                    },
-                    onProgressValueChangedFinished = {
-                        onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
-                    },
-                    onClick = {
-                        onEvent(
-                            MusicEvent.OnSongClick(song.id, index)
+                    SongCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 6.dp
+                            ),
+                        song = song,
+                        isCurrentSong = isCurrentSong,
+                        currentSongProgress = if (isCurrentSong) {
+                            currentSongState.currentSongProgress
+                        } else null,
+                        onFavoriteIconClick = {
+                            onEvent(MusicEvent.OnFavoriteIconClick(index))
+                        },
+                        onProgressValueChanged = {
+                            onEvent(CurrentSongEvent.OnProgressValueChanged(it))
+                        },
+                        onProgressValueChangedFinished = {
+                            onEvent(CurrentSongEvent.OnProgressValueChangedFinish)
+                        },
+                        onClick = {
+                            onEvent(
+                                MusicEvent.OnSongClick(song.id, index)
+                            )
+                        }
+                    )
+
+                    // Add additional content after 10 items
+                    if (index == 8 && !isSystemInDarkTheme()) {
+                        ParallaxScrollEffectContent(
+                            windowAndShelfOffset = windowAndShelfOffset,
+                            moonOffset = moonOffset,
+                            musicSoundIconsOffset = musicSoundIconsOffset
                         )
                     }
-                )
-
-                // Add additional content after 10 items
-                if (index == 8 && !isSystemInDarkTheme()) {
-                    ParallaxScrollEffectContent(
-                        windowAndShelfOffset = windowAndShelfOffset,
-                        moonOffset = moonOffset,
-                        musicSoundIconsOffset = musicSoundIconsOffset
-                    )
                 }
             }
+
+            CurrentSongBar(
+                modifier = Modifier
+                    .clickable {
+                        onEvent(CurrentSongEvent.OnCurrentSongBarClick)
+                    },
+                currentSongState = currentSongState,
+                animatedVisibilityScope = animatedVisibilityScope,
+                skipPrevious = {
+                    onEvent(CurrentSongEvent.SkipPrevious)
+                },
+                onPlayClick = {
+                    onEvent(CurrentSongEvent.OnPlayClick)
+                },
+                skipNext = {
+                    onEvent(CurrentSongEvent.SkipNext)
+                }
+            )
         }
     }
-
-//        CurrentSongBar(
-//            currentSongState = currentSongState,
-//            skipPrevious = {
-//                onEvent(CurrentSongEvent.SkipPrevious)
-//            },
-//            onPlayClick = {
-//                onEvent(CurrentSongEvent.OnPlayClick)
-//            },
-//            skipNext = {
-//                onEvent(CurrentSongEvent.SkipNext)
-//            }
-//        )
 
 //        if(currentSongState.song != null) {
 //            Spacer(modifier = Modifier.size(50.dp))

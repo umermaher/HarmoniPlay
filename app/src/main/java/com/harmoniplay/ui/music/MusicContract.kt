@@ -48,6 +48,7 @@ sealed class MusicResult {
     data class ScrollToPosition(val pos: Int): MusicResult()
     data class StartPlayerService(val action: ServiceActions, val shouldExitFromApplication: Boolean = false): MusicResult()
     data class Share(val uri: Uri, val title: String): MusicResult()
+    data class Navigate(val route: String): MusicResult()
 }
 
 sealed class MusicEvent {
@@ -75,6 +76,8 @@ sealed class CurrentSongEvent: MusicEvent() {
     data object SkipNext: CurrentSongEvent()
     data object SkipPrevious: CurrentSongEvent()
     data object ToggleSongContent: CurrentSongEvent()
+    data object OnCurrentSongBarClick: CurrentSongEvent()
+    data object OnBackButtonClicked: CurrentSongEvent()
     data class OnFavoriteIconClick(val index: Int): CurrentSongEvent()
     data object OnShareButtonClick: CurrentSongEvent()
     data class OnProgressValueChanged(val value: Float): CurrentSongEvent()

@@ -62,7 +62,7 @@ class LoginViewModel @Inject constructor(
                     loginState.value.name
                 )
                 resultChannel.send(
-                    LoginResult.CheckPermissionsThenNavigate(Screen.MusicScreen.route, Screen.LoginScreen.route)
+                    LoginResult.CheckPermissionsThenNavigate(Screen.Music.route, Screen.LoginScreen.route)
                 )
             }
         }
@@ -88,7 +88,7 @@ class LoginViewModel @Inject constructor(
             if(permission == storagePermission || permission == notificationPermission) {
                 viewModelScope.launch {
                     resultChannel.send(
-                        LoginResult.CheckPermissionsThenNavigate(Screen.MusicScreen.route, Screen.LoginScreen.route)
+                        LoginResult.CheckPermissionsThenNavigate(Screen.Music.route, Screen.LoginScreen.route)
                     )
                 }
             }

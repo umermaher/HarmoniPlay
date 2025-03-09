@@ -1,7 +1,12 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.harmoniplay.ui.music.components.currentsong
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -42,13 +47,19 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.harmoniplay.ui.ARTIST_NAME_BOUND_KEY
+import com.harmoniplay.ui.ARTWORK_BOUND_KEY
+import com.harmoniplay.ui.CONTENT_BG_BOUND_KEY
+import com.harmoniplay.ui.TITLE_BOUND_KEY
 import com.harmoniplay.ui.music.CurrentSongState
 import com.harmoniplay.utils.composables.LoadImageWithFallback
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CurrentSongBar(
+fun SharedTransitionScope.CurrentSongBar(
+    modifier: Modifier = Modifier,
     currentSongState: CurrentSongState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     skipPrevious: () -> Unit,
     onPlayClick: () -> Unit,
     skipNext: () -> Unit
@@ -66,9 +77,15 @@ fun CurrentSongBar(
         )
     ) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .background(color = MaterialTheme.colorScheme.primary)
                 .fillMaxWidth()
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(
+                        key = CONTENT_BG_BOUND_KEY
+                    ),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
                 .padding(start = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -77,6 +94,12 @@ fun CurrentSongBar(
                 modifier = Modifier
                     .weight(0.2f)
                     .height(35.dp)
+                    .sharedElement(
+                        state = rememberSharedContentState(
+                            key = ARTWORK_BOUND_KEY
+                        ),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .clip(shape = RoundedCornerShape(10.dp)),
                 uri = currentSongState.song?.artworkUri
             )
@@ -90,6 +113,12 @@ fun CurrentSongBar(
                         // Rendering to an offscreen buffer is required to get the faded edges' alpha to be
                         // applied only to the text, and not whatever is drawn below this composable (e.g. the
                         // window).
+                        .sharedElement(
+                            state = rememberSharedContentState(
+                                key = TITLE_BOUND_KEY
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
                         .graphicsLayer {
                             compositingStrategy = CompositingStrategy.Offscreen
                         }
@@ -103,7 +132,6 @@ fun CurrentSongBar(
                             iterations = Int.MAX_VALUE,
                             spacing = MarqueeSpacing(0.dp)
                         )
-                        .background(Color.Black)
                         .padding(start = 10.dp),
                     text = currentSongState.song?.title.toString(),
                     style = MaterialTheme.typography.labelLarge.copy(
@@ -113,7 +141,13 @@ fun CurrentSongBar(
                 )
 
                 Text(
-                    modifier = Modifier.padding(start = 10.dp),
+                    modifier = Modifier.padding(start = 10.dp)
+                        .sharedElement(
+                            state = rememberSharedContentState(
+                                key = ARTIST_NAME_BOUND_KEY
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
                     text = currentSongState.song?.artist.toString(),
                     style = MaterialTheme.typography.labelMedium,
                     color = contentColor

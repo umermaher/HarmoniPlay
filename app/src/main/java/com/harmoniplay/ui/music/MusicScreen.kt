@@ -8,6 +8,9 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -62,15 +65,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun MusicScreen(
+fun SharedTransitionScope.MusicScreen(
     state: MusicState,
     searchBarText: String,
     currentSongState: CurrentSongState,
     permissionDialogQueue: SnapshotStateList<String>,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     result: Flow<MusicResult>,
     onEvent: (MusicEvent) -> Unit,
+    navigate: (route: String) -> Unit
 ) {
 
     val activity = LocalContext.current as MainActivity
@@ -188,6 +193,8 @@ fun MusicScreen(
                     activity.startActivity(chooser)
                 }
             }
+
+            is MusicResult.Navigate -> navigate(res.route)
         }
     }
 
@@ -227,6 +234,7 @@ fun MusicScreen(
                             .padding(values),
                         state = state,
                         currentSongState = currentSongState,
+                        animatedVisibilityScope = animatedVisibilityScope,
                         lazyListState = lazyListState,
                         onEvent = onEvent
                     )
@@ -255,14 +263,14 @@ fun MusicScreen(
             }
         }
 
-        if(currentSongState.song != null) {
-            CurrentSongContent(
-                modifier = Modifier
-                    .fillMaxSize(),
-                currentSongState = currentSongState,
-                onEvent = onEvent,
-            )
-        }
+//        if(currentSongState.song != null) {
+//            CurrentSongContent(
+//                modifier = Modifier
+//                    .fillMaxSize(),
+//                currentSongState = currentSongState,
+//                onEvent = onEvent,
+//            )
+//        }
 
     }
 

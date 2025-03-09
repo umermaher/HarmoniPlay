@@ -13,6 +13,8 @@ import com.harmoniplay.domain.utils.DataError
 import com.harmoniplay.domain.utils.DataError.Local.*
 import com.harmoniplay.domain.volume.StreamVolumeManager
 import com.harmoniplay.service.ServiceActions
+import com.harmoniplay.ui.music.current_song.CurrentSongResult
+import com.harmoniplay.utils.Screen
 import com.harmoniplay.utils.composables.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -102,6 +104,9 @@ class MusicViewModel @Inject constructor(
 
     private val resultChannel = Channel<MusicResult>()
     val musicResult = resultChannel.receiveAsFlow()
+
+    private val currentSongResultChannel = Channel<CurrentSongResult>()
+    val currentSongResult = currentSongResultChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -236,8 +241,10 @@ class MusicViewModel @Inject constructor(
                 toggleFavorite(event.index)
             }
 
-            CurrentSongEvent.ToggleSongContent -> _currentSongState.update {
-                it.copy(shouldExpandCurrentSongContent = !it.shouldExpandCurrentSongContent)
+            CurrentSongEvent.ToggleSongContent -> {
+                _currentSongState.update {
+                    it.copy(shouldExpandCurrentSongContent = !it.shouldExpandCurrentSongContent)
+                }
             }
 
             CurrentSongEvent.OnShareButtonClick -> viewModelScope.launch {
@@ -260,6 +267,24 @@ class MusicViewModel @Inject constructor(
 
             CurrentSongEvent.OnProgressValueChangedFinish -> _currentSongState.update {
                 it.copy(isUserChangingProgress = false)
+            }
+
+            CurrentSongEvent.OnCurrentSongBarClick -> viewModelScope.launch {
+                _currentSongState.update {
+                    it.copy(shouldExpandCurrentSongContent = true)
+                }
+                resultChannel.send(
+                    MusicResult.Navigate(Screen.CurrentSongScreen.route)
+                )
+            }
+
+            CurrentSongEvent.OnBackButtonClicked -> viewModelScope.launch {
+                _currentSongState.update {
+                    it.copy(shouldExpandCurrentSongContent = false)
+                }
+                currentSongResultChannel.send(
+                    CurrentSongResult.NavigateUp
+                )
             }
         }
     }
